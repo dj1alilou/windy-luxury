@@ -366,7 +366,7 @@ function renderOrdersTable(ordersList) {
     <tr>
       <td>${order.id?.slice(-6) || "N/A"}</td>
       <td>${order.customerName || "عميل"}</td>
-      <td>${order.items?.length || 0} منتجات</td>
+      <td>${(order.products || []).length} منتجات</td>
       <td>${formatDate(order.createdAt)}</td>
       <td>${(order.total || 0).toLocaleString()} DA</td>
       <td><span class="status-badge status-${order.status || "pending"}">${getStatusText(
@@ -659,6 +659,26 @@ function viewOrder(orderId) {
   const order = orders.find((o) => o.id === orderId);
   if (!order) return;
 
+  // Render products list
+  const productsHtml = (order.products || [])
+    .map(
+      (product) => `
+    <div class="flex items-center gap-3 p-2 border-b">
+      <img src="${product.image || "https://via.placeholder.com/50"}" alt="${product.title}" class="w-12 h-12 object-cover rounded">
+      <div class="flex-1">
+        <p class="font-bold">${product.title || "منتج"}</p>
+        <p class="text-sm text-gray-600">
+          ${product.quantity} × ${(product.price || 0).toLocaleString()} DA
+          ${product.size ? ` | المقاس: ${product.size}` : ""}
+          ${product.color ? ` | اللون: ${product.color}` : ""}
+        </p>
+      </div>
+      <p class="font-bold">${((product.price || 0) * product.quantity).toLocaleString()} DA</p>
+    </div>
+  `,
+    )
+    .join("");
+
   const content = `
     <div class="space-y-4">
       <div class="grid grid-cols-2 gap-4">
@@ -695,6 +715,13 @@ function viewOrder(orderId) {
         <div>
           <p class="text-sm text-gray-600">التاريخ:</p>
           <p class="font-bold">${formatDate(order.createdAt)}</p>
+        </div>
+      </div>
+      
+      <div class="mt-4">
+        <h4 class="font-bold mb-2">المنتجات:</h4>
+        <div class="border rounded">
+          ${productsHtml}
         </div>
       </div>
     </div>
