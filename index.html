@@ -1,0 +1,1885 @@
+<!doctype html>
+<html lang="fr">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>windy.luxury - Bijoux de Luxe</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+    />
+    <!-- Professional Fonts -->
+    <link
+      href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;500;600;700&family=Montserrat:wght@300;400;500;600&family=Playfair+Display:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      body {
+        font-family: "Montserrat", sans-serif;
+        background: #fef6f9;
+        color: #333;
+      }
+
+      .luxury-font {
+        font-family: "Cormorant Garamond", serif;
+        font-weight: 500;
+        letter-spacing: 0.5px;
+      }
+
+      .elegant-font {
+        font-family: "Playfair Display", serif;
+        font-weight: 400;
+      }
+
+      .professional-font {
+        font-family: "Montserrat", sans-serif;
+        font-weight: 400;
+      }
+
+      .gradient-pink {
+        background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+      }
+
+      .category-card {
+        transition: all 0.3s ease;
+        border: 2px solid #f0f0f0;
+        background: white;
+        border-radius: 12px;
+        padding: 12px 8px;
+        text-align: center;
+        min-height: 110px;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+      }
+
+      .category-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+        border-color: #f093fb;
+      }
+
+      .category-card.active {
+        border-color: #f5576c;
+        background: #fff5f7;
+        box-shadow: 0 5px 15px rgba(245, 87, 108, 0.2);
+      }
+
+      .product-card {
+        transition: all 0.3s ease;
+        background: white;
+        border: 1px solid #e5e5e5;
+        border-radius: 12px;
+        overflow: hidden;
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+        cursor: pointer;
+      }
+
+      .product-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 15px 30px rgba(0, 0, 0, 0.1);
+      }
+
+      .category-icon {
+        width: 50px;
+        height: 50px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 50%;
+        margin-bottom: 8px;
+        background: linear-gradient(135deg, #f8f8f8 0%, #f0f0f0 100%);
+        border: 2px solid #f0f0f0;
+        font-size: 22px;
+        color: #f5576c;
+      }
+
+      .category-card.active .category-icon {
+        background: linear-gradient(135deg, #f5576c 0%, #f093fb 100%);
+        color: white;
+        border-color: transparent;
+      }
+
+      .category-card:hover .category-icon {
+        transform: scale(1.1);
+        transition: transform 0.3s ease;
+      }
+
+      .price-tag {
+        position: absolute;
+        top: 12px;
+        right: 12px;
+        background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+        color: white;
+        padding: 6px 12px;
+        border-radius: 20px;
+        font-weight: 600;
+        font-size: 14px;
+        z-index: 2;
+        box-shadow: 0 3px 10px rgba(0, 0, 0, 0.2);
+      }
+
+      @media (max-width: 640px) {
+        .category-grid {
+          grid-template-columns: repeat(3, 1fr) !important;
+          gap: 8px !important;
+        }
+
+        .category-card {
+          padding: 10px 6px;
+          min-height: 100px;
+        }
+
+        .category-icon {
+          width: 40px;
+          height: 40px;
+          margin-bottom: 6px;
+          font-size: 18px;
+        }
+
+        .category-card h3 {
+          font-size: 11px;
+          margin-bottom: 3px;
+          font-weight: 600;
+        }
+
+        .category-card p {
+          font-size: 10px;
+          color: #666;
+        }
+
+        .product-grid {
+          grid-template-columns: repeat(2, 1fr) !important;
+          gap: 12px !important;
+        }
+
+        .product-card .h-56 {
+          height: 180px !important;
+        }
+
+        .product-card .p-6 {
+          padding: 15px !important;
+        }
+
+        .product-card h3 {
+          font-size: 14px !important;
+          line-height: 1.3 !important;
+          margin-bottom: 8px !important;
+        }
+
+        .product-card .text-2xl {
+          font-size: 16px !important;
+        }
+
+        .product-card button {
+          padding: 8px 12px !important;
+          font-size: 12px !important;
+        }
+
+        .modal-content {
+          padding: 15px !important;
+          width: 95% !important;
+        }
+
+        .hero-section .text-2xl {
+          font-size: 24px !important;
+        }
+      }
+
+      @media (min-width: 641px) and (max-width: 1024px) {
+        .category-grid {
+          grid-template-columns: repeat(4, 1fr) !important;
+          gap: 12px !important;
+        }
+
+        .product-grid {
+          grid-template-columns: repeat(3, 1fr) !important;
+          gap: 20px !important;
+        }
+
+        .category-icon {
+          width: 45px;
+          height: 45px;
+          font-size: 20px;
+        }
+      }
+
+      @media (min-width: 1025px) {
+        .category-grid {
+          grid-template-columns: repeat(7, 1fr) !important;
+          gap: 15px !important;
+        }
+
+        .product-grid {
+          grid-template-columns: repeat(4, 1fr) !important;
+          gap: 25px !important;
+        }
+
+        .category-icon {
+          width: 55px;
+          height: 55px;
+          font-size: 24px;
+        }
+      }
+
+      .loading {
+        display: inline-block;
+        width: 40px;
+        height: 40px;
+        border: 3px solid rgba(240, 147, 251, 0.3);
+        border-radius: 50%;
+        border-top-color: #f093fb;
+        animation: spin 1s ease-in-out infinite;
+      }
+
+      @keyframes spin {
+        to {
+          transform: rotate(360deg);
+        }
+      }
+
+      .modal-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(0, 0, 0, 0.7);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 1000;
+        opacity: 0;
+        visibility: hidden;
+        transition: all 0.3s ease;
+      }
+
+      .modal-overlay.active {
+        opacity: 1;
+        visibility: visible;
+      }
+
+      .modal-content {
+        background: white;
+        border-radius: 15px;
+        padding: 20px;
+        max-width: 500px;
+        width: 90%;
+        max-height: 90vh;
+        overflow-y: auto;
+        transform: translateY(20px);
+        transition: transform 0.3s ease;
+      }
+
+      .modal-overlay.active .modal-content {
+        transform: translateY(0);
+      }
+
+      .whatsapp-btn {
+        background: linear-gradient(135deg, #25d366 0%, #128c7e 100%);
+        color: white;
+        padding: 12px;
+        border-radius: 10px;
+        font-weight: 600;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        transition: all 0.3s ease;
+        width: 100%;
+        font-size: 14px;
+      }
+
+      .whatsapp-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 10px 20px rgba(37, 211, 102, 0.3);
+      }
+
+      .scroll-to-top {
+        position: fixed;
+        bottom: 20px;
+        right: 20px;
+        width: 40px;
+        height: 40px;
+        background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-size: 16px;
+        cursor: pointer;
+        z-index: 100;
+        opacity: 0;
+        visibility: hidden;
+        transition: all 0.3s ease;
+        box-shadow: 0 4px 10px rgba(240, 147, 251, 0.4);
+      }
+
+      .scroll-to-top.active {
+        opacity: 1;
+        visibility: visible;
+      }
+
+      .scroll-to-top:hover {
+        transform: translateY(-3px);
+      }
+
+      .product-image {
+        width: 100%;
+        height: 200px;
+        object-fit: cover;
+        background: linear-gradient(135deg, #f8f8f8 0%, #f0f0f0 100%);
+      }
+
+      @media (min-width: 641px) {
+        .product-image {
+          height: 220px;
+        }
+      }
+
+      @media (min-width: 1025px) {
+        .product-image {
+          height: 250px;
+        }
+      }
+
+      .fallback-image {
+        width: 100%;
+        height: 200px;
+        background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-size: 14px;
+        text-align: center;
+        padding: 10px;
+      }
+
+      @media (min-width: 641px) {
+        .fallback-image {
+          height: 220px;
+        }
+      }
+
+      @media (min-width: 1025px) {
+        .fallback-image {
+          height: 250px;
+        }
+      }
+
+      /* Shopping Cart Styles */
+      .cart-badge {
+        position: absolute;
+        top: -5px;
+        right: -5px;
+        background: #f5576c;
+        color: white;
+        border-radius: 50%;
+        width: 20px;
+        height: 20px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 12px;
+        font-weight: bold;
+      }
+
+      .cart-item {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 15px;
+        border-bottom: 1px solid #f0f0f0;
+        background: white;
+        border-radius: 8px;
+        margin-bottom: 10px;
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+      }
+
+      .cart-item:last-child {
+        margin-bottom: 0;
+        border-bottom: none;
+      }
+
+      .cart-item-info {
+        flex: 1;
+        margin-right: 15px;
+      }
+
+      .cart-item-title {
+        font-weight: 600;
+        font-size: 14px;
+        margin-bottom: 5px;
+        color: #333;
+      }
+
+      .cart-item-price {
+        color: #f5576c;
+        font-weight: 700;
+        font-size: 16px;
+      }
+
+      .cart-quantity-controls {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        background: #f8f8f8;
+        padding: 5px;
+        border-radius: 8px;
+      }
+
+      .quantity-btn {
+        width: 32px;
+        height: 32px;
+        border-radius: 6px;
+        background: white;
+        border: 1px solid #e0e0e0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        font-size: 16px;
+        color: #333;
+        transition: all 0.2s ease;
+      }
+
+      .quantity-btn:hover {
+        background: #f0f0f0;
+        border-color: #f5576c;
+        color: #f5576c;
+      }
+
+      .quantity-btn:active {
+        transform: scale(0.95);
+      }
+
+      .quantity-btn.remove {
+        color: #ff4444;
+        border-color: #ffcccc;
+      }
+
+      .quantity-btn.remove:hover {
+        background: #ffe6e6;
+        border-color: #ff4444;
+      }
+
+      .quantity-btn.add {
+        color: #00c851;
+        border-color: #c8e6c9;
+      }
+
+      .quantity-btn.add:hover {
+        background: #e8f5e9;
+        border-color: #00c851;
+      }
+
+      .quantity-display {
+        min-width: 30px;
+        text-align: center;
+        font-weight: 700;
+        font-size: 16px;
+        color: #333;
+      }
+
+      .cart-total {
+        font-size: 20px;
+        font-weight: 800;
+        color: #f5576c;
+      }
+
+      .cart-empty {
+        text-align: center;
+        padding: 40px 20px;
+        color: #999;
+      }
+
+      .cart-empty i {
+        font-size: 48px;
+        margin-bottom: 15px;
+        color: #ddd;
+      }
+
+      /* Cart Modal Styles */
+      .cart-modal-content {
+        max-width: 500px;
+        max-height: 80vh;
+        display: flex;
+        flex-direction: column;
+      }
+
+      .cart-items-container {
+        flex: 1;
+        overflow-y: auto;
+        max-height: 300px;
+        margin: 15px 0;
+        padding-right: 10px;
+      }
+
+      .cart-summary {
+        border-top: 2px solid #f0f0f0;
+        padding-top: 20px;
+        margin-top: 20px;
+        background: white;
+        border-radius: 10px;
+        padding: 15px;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+      }
+
+      /* Remove button */
+      .remove-item-btn {
+        width: 32px;
+        height: 32px;
+        border-radius: 6px;
+        background: #ffe6e6;
+        border: 1px solid #ffcccc;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        font-size: 14px;
+        color: #ff4444;
+        transition: all 0.2s ease;
+        margin-left: 5px;
+      }
+
+      .remove-item-btn:hover {
+        background: #ffcccc;
+        border-color: #ff4444;
+        transform: scale(1.05);
+      }
+
+      .remove-item-btn:active {
+        transform: scale(0.95);
+      }
+
+      /* Cart button in navigation */
+      .cart-btn {
+        position: relative;
+        padding: 10px 20px;
+        background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+        color: white;
+        border-radius: 10px;
+        font-weight: 600;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        transition: all 0.3s ease;
+        border: none;
+        cursor: pointer;
+        font-size: 14px;
+      }
+
+      .cart-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(240, 147, 251, 0.3);
+      }
+
+      /* Notification styles */
+      @keyframes slideIn {
+        from {
+          transform: translateX(100%);
+          opacity: 0;
+        }
+        to {
+          transform: translateX(0);
+          opacity: 1;
+        }
+      }
+
+      .notification {
+        position: fixed;
+        top: 80px;
+        right: 20px;
+        background: linear-gradient(135deg, #4caf50 0%, #45a049 100%);
+        color: white;
+        padding: 12px 20px;
+        border-radius: 8px;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        z-index: 1000;
+        animation: slideIn 0.3s ease;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+      }
+
+      /* Cart item actions */
+      .cart-item-actions {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+
+      .cart-item-total {
+        font-weight: 600;
+        color: #f5576c;
+        margin-left: 10px;
+        font-size: 14px;
+      }
+
+      /* Empty cart button */
+      .empty-cart-btn {
+        background: #ff4444;
+        color: white;
+        border: none;
+        padding: 8px 15px;
+        border-radius: 6px;
+        font-size: 12px;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        margin-top: 10px;
+        display: flex;
+        align-items: center;
+        gap: 5px;
+      }
+
+      .empty-cart-btn:hover {
+        background: #cc0000;
+        transform: translateY(-1px);
+      }
+
+      /* Arabic styles for modal */
+      .arabic-label {
+        direction: rtl;
+        text-align: right;
+        font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+      }
+
+      /* Delivery options */
+      .delivery-options {
+        display: flex;
+        gap: 10px;
+        margin-bottom: 15px;
+      }
+
+      .delivery-option {
+        flex: 1;
+        text-align: center;
+        padding: 10px;
+        border: 2px solid #e0e0e0;
+        border-radius: 8px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        background: white;
+      }
+
+      .delivery-option:hover {
+        border-color: #f093fb;
+      }
+
+      .delivery-option.selected {
+        border-color: #f5576c;
+        background: linear-gradient(135deg, #fff5f7 0%, #fff0f5 100%);
+      }
+
+      .delivery-icon {
+        font-size: 24px;
+        margin-bottom: 8px;
+        color: #666;
+      }
+
+      .delivery-option.selected .delivery-icon {
+        color: #f5576c;
+      }
+
+      .delivery-text {
+        font-weight: 600;
+        color: #333;
+        font-size: 14px;
+      }
+
+      .delivery-desc {
+        font-size: 11px;
+        color: #666;
+        margin-top: 3px;
+      }
+
+      /* Product info styling - UPDATED WITH BLACK FONT */
+      .product-info {
+        padding: 15px;
+        background: white;
+        border-top: 1px solid #f0f0f0;
+      }
+
+      .product-title {
+        font-family: "Montserrat", sans-serif;
+        font-weight: 600;
+        font-size: 14px;
+        color: #000000 !important;
+        margin-bottom: 8px;
+        line-height: 1.3;
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+      }
+
+      .product-price {
+        font-family: "Montserrat", sans-serif;
+        font-weight: 700;
+        font-size: 16px;
+        color: #000000 !important;
+        margin-bottom: 12px;
+      }
+
+      .product-actions {
+        display: flex;
+        gap: 8px;
+      }
+
+      .action-btn {
+        flex: 1;
+        padding: 8px 12px;
+        border-radius: 8px;
+        font-weight: 600;
+        font-size: 12px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 5px;
+        border: none;
+        font-family: "Montserrat", sans-serif;
+      }
+
+      .action-btn.cart {
+        background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+        color: white;
+      }
+
+      .action-btn.buy {
+        background: linear-gradient(135deg, #6c5ce7 0%, #a29bfe 100%);
+        color: white;
+      }
+
+      .action-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+      }
+
+      .action-btn:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+        transform: none !important;
+        box-shadow: none !important;
+      }
+
+      /* Success Modal Styles */
+      #successModal .modal-content {
+        animation: fadeIn 0.3s ease;
+      }
+
+      @keyframes fadeIn {
+        from {
+          opacity: 0;
+          transform: scale(0.9);
+        }
+        to {
+          opacity: 1;
+          transform: scale(1);
+        }
+      }
+
+      .whatsapp-btn {
+        background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
+        color: white;
+        padding: 12px;
+        border-radius: 10px;
+        font-weight: 600;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        transition: all 0.3s ease;
+        width: 100%;
+        font-size: 14px;
+        border: none;
+        cursor: pointer;
+      }
+
+      .whatsapp-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 10px 20px rgba(79, 70, 229, 0.3);
+      }
+
+      /* Product Details Modal Styles */
+      .product-details-image {
+        width: 100%;
+        height: auto;
+        max-height: 500px;
+        object-fit: contain;
+        border-radius: 12px;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+      }
+
+      .product-details-info {
+        display: flex;
+        flex-direction: column;
+        gap: 15px;
+      }
+
+      .product-details-title {
+        font-family: "Cormorant Garamond", serif;
+        font-size: 28px;
+        font-weight: 600;
+        color: #000000;
+        line-height: 1.2;
+      }
+
+      .product-details-price {
+        font-family: "Montserrat", sans-serif;
+        font-size: 28px;
+        font-weight: 700;
+        color: #000000;
+      }
+
+      .product-details-description {
+        font-family: "Montserrat", sans-serif;
+        color: #333;
+        line-height: 1.6;
+        font-size: 16px;
+      }
+
+      .stock-info {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 10px 15px;
+        background: #f8f9fa;
+        border-radius: 8px;
+        border-left: 4px solid #f5576c;
+        font-family: "Montserrat", sans-serif;
+      }
+
+      .stock-label {
+        font-weight: 600;
+        color: #333;
+      }
+
+      .stock-value {
+        font-weight: 700;
+        color: #f5576c;
+      }
+
+      .size-selection {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+        font-family: "Montserrat", sans-serif;
+      }
+
+      .size-options {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+      }
+
+      .size-option {
+        padding: 8px 16px;
+        border: 2px solid #e0e0e0;
+        border-radius: 8px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        font-weight: 600;
+        font-family: "Montserrat", sans-serif;
+      }
+
+      .size-option:hover {
+        border-color: #f093fb;
+        background: #fff5f7;
+      }
+
+      .size-option.selected {
+        border-color: #f5576c;
+        background: linear-gradient(135deg, #f5576c 0%, #f093fb 100%);
+        color: white;
+      }
+
+      .size-option.out-of-stock {
+        opacity: 0.5;
+        cursor: not-allowed;
+        text-decoration: line-through;
+      }
+
+      /* Updated Text Colors for Black */
+      .text-gray-800 {
+        color: #1f2937 !important;
+      }
+
+      .text-gray-700 {
+        color: #374151 !important;
+      }
+
+      .text-gray-600 {
+        color: #4b5563 !important;
+      }
+
+      .text-gray-500 {
+        color: #6b7280 !important;
+      }
+
+      .text-gray-400 {
+        color: #9ca3af !important;
+      }
+
+      /* Header and Navigation */
+      .nav-title {
+        font-family: "Cormorant Garamond", serif;
+        font-weight: 600;
+        letter-spacing: 0.5px;
+      }
+
+      .section-title {
+        font-family: "Cormorant Garamond", serif;
+        font-weight: 600;
+        letter-spacing: 0.5px;
+        color: #000000;
+      }
+
+      .section-subtitle {
+        font-family: "Montserrat", sans-serif;
+        font-weight: 400;
+        color: #666;
+      }
+
+      /* Category Card Text */
+      .category-card h3 {
+        font-family: "Montserrat", sans-serif;
+        font-weight: 600;
+        color: #000000;
+      }
+
+      .category-card p {
+        font-family: "Montserrat", sans-serif;
+        color: #666;
+      }
+
+      /* Feature Cards */
+      .feature-title {
+        font-family: "Montserrat", sans-serif;
+        font-weight: 600;
+        color: #000000;
+      }
+
+      .feature-desc {
+        font-family: "Montserrat", sans-serif;
+        color: #666;
+      }
+
+      /* Contact Information */
+      .contact-label {
+        font-family: "Montserrat", sans-serif;
+        color: #666;
+      }
+
+      .contact-value {
+        font-family: "Montserrat", sans-serif;
+        font-weight: 600;
+        color: #000000;
+      }
+
+      /* Footer */
+      .footer-text {
+        font-family: "Montserrat", sans-serif;
+        color: #9ca3af;
+      }
+
+      /* Pagination Styles */
+      .pagination-container {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        margin-top: 2rem;
+        gap: 0.5rem;
+      }
+
+      .pagination-btn {
+        width: 2.5rem;
+        height: 2.5rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 0.5rem;
+        border: 1px solid #e5e7eb;
+        background: white;
+        color: #374151;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+      }
+
+      .pagination-btn:hover {
+        background: #f3f4f6;
+        border-color: #d1d5db;
+      }
+
+      .pagination-btn.active {
+        background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+        color: white;
+        border-color: transparent;
+      }
+
+      .pagination-btn.disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+      }
+
+      .pagination-btn.disabled:hover {
+        background: white;
+        border-color: #e5e7eb;
+      }
+
+      .pagination-ellipsis {
+        padding: 0 0.5rem;
+        color: #6b7280;
+      }
+
+      .pagination-info {
+        font-size: 0.875rem;
+        color: #6b7280;
+        margin-left: 1rem;
+      }
+    </style>
+  </head>
+  <body class="bg-gray-50">
+    <!-- Navigation with Cart Button -->
+    <nav class="bg-white fixed top-0 left-0 right-0 z-50 shadow-sm">
+      <div class="container mx-auto px-4 py-3">
+        <div class="flex items-center justify-between">
+          <div class="flex items-center space-x-2">
+            <img
+              src="images/luxurylogo-removebg-preview.png"
+              alt="Logo"
+              class="w-16 h-16 object-contain"
+            />
+            <div>
+              <h1 class="nav-title text-xl font-bold text-pink-500">
+                windy.luxury
+              </h1>
+              <p class="text-xs text-gray-500">bijoux</p>
+            </div>
+          </div>
+
+          <div class="flex items-center space-x-4">
+            <!-- Cart Button - Always visible now -->
+            <button
+              id="cartButton"
+              type="button"
+              class="cart-btn"
+              aria-label="Ouvrir le panier"
+              title="Ouvrir le panier"
+            >
+              <i class="fas fa-shopping-cart"></i>
+              <span>Panier</span>
+              <span id="cartCount" class="cart-badge" style="display: none"
+                >0</span
+              >
+            </button>
+
+            <button
+              id="menuBtn"
+              type="button"
+              class="md:hidden p-2 rounded-lg hover:bg-pink-50 relative"
+              aria-label="Ouvrir le menu"
+              title="Ouvrir le menu"
+            >
+              <i class="fas fa-bars text-gray-700"></i>
+              <span
+                id="cartCountMobile"
+                class="cart-badge"
+                style="display: none"
+                >0</span
+              >
+            </button>
+          </div>
+        </div>
+      </div>
+    </nav>
+
+    <!-- Mobile Menu with Cart -->
+    <div
+      id="mobileMenu"
+      class="fixed inset-0 bg-black/50 z-50 hidden"
+      onclick="closeMobileMenu()"
+    >
+      <div
+        class="absolute top-0 right-0 w-56 h-full bg-white"
+        onclick="event.stopPropagation()"
+      >
+        <div class="p-5">
+          <div class="flex justify-between items-center mb-6">
+            <h2 class="text-lg font-bold text-gray-800">Menu</h2>
+            <button
+              type="button"
+              onclick="closeMobileMenu()"
+              class="p-2"
+              aria-label="Fermer le menu"
+              title="Fermer le menu"
+            >
+              <i class="fas fa-times text-gray-700"></i>
+            </button>
+          </div>
+          <div class="space-y-1 mb-4">
+            <a
+              href="#home"
+              onclick="closeMobileMenu()"
+              class="block py-3 px-4 text-gray-700 hover:bg-pink-50 hover:text-pink-500 font-medium rounded-lg"
+              >Accueil</a
+            >
+            <a
+              href="#categories"
+              onclick="closeMobileMenu()"
+              class="block py-3 px-4 text-gray-700 hover:bg-pink-50 hover:text-pink-500 font-medium rounded-lg"
+              >Catégories</a
+            >
+            <a
+              href="#collection"
+              onclick="closeMobileMenu()"
+              class="block py-3 px-4 text-gray-700 hover:bg-pink-50 hover:text-pink-500 font-medium rounded-lg"
+              >Collection</a
+            >
+            <a
+              href="#contact"
+              onclick="closeMobileMenu()"
+              class="block py-3 px-4 text-gray-700 hover:bg-pink-50 hover:text-pink-500 font-medium rounded-lg"
+              >Contact</a
+            >
+          </div>
+
+          <!-- Mobile Cart Button -->
+          <button
+            type="button"
+            onclick="
+              openCartModal();
+              closeMobileMenu();
+            "
+            class="w-full cart-btn mt-4"
+            aria-label="Ouvrir le panier"
+            title="Ouvrir le panier"
+          >
+            <i class="fas fa-shopping-cart"></i>
+            <span>Panier</span>
+            <span id="mobileCartCount" class="cart-badge" style="display: none"
+              >0</span
+            >
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Hero Section -->
+    <section
+      id="home"
+      class="pt-20 pb-12 px-4 bg-gradient-to-br from-pink-50 to-purple-50"
+    >
+      <div class="container mx-auto max-w-6xl">
+        <div class="text-center">
+          <div class="inline-block mb-4">
+            <img
+              src="images/luxurylogo-removebg-preview.png"
+              alt="Logo"
+              class="w-20 h-20 object-contain mx-auto mt-4"
+            />
+          </div>
+          <h1 class="section-title text-2xl md:text-4xl font-bold mb-3">
+            windy.luxury
+          </h1>
+          <p class="section-subtitle text-sm md:text-base max-w-md mx-auto">
+            Bijoux de luxe pour votre élégance quotidienne
+          </p>
+          <button
+            type="button"
+            onclick="scrollToCategories()"
+            class="gradient-pink text-white px-6 py-3 rounded-xl font-semibold hover:shadow-lg transition-all duration-300 mt-6"
+            aria-label="Voir les catégories"
+            title="Voir les catégories"
+          >
+            <i class="fas fa-gem mr-2"></i>Voir les Catégories
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <!-- Categories Section -->
+    <section id="categories" class="py-10 px-4 bg-white">
+      <div class="container mx-auto max-w-6xl">
+        <div class="text-center mb-8">
+          <h2 class="section-title text-xl md:text-3xl font-bold mb-2">
+            Nos Catégories
+          </h2>
+          <p class="section-subtitle text-xs md:text-sm max-w-md mx-auto">
+            Choisissez une catégorie
+          </p>
+        </div>
+
+        <div id="categories-container" class="category-grid grid gap-3 mb-6">
+          <!-- Categories loaded dynamically -->
+        </div>
+      </div>
+    </section>
+
+    <!-- Collection Section -->
+    <section id="collection" class="py-10 px-4 bg-gray-50">
+      <div class="container mx-auto max-w-6xl">
+        <div class="text-center mb-8">
+          <h2
+            class="section-title text-xl md:text-3xl font-bold mb-2"
+            id="category-title"
+          >
+            Tous les Produits
+          </h2>
+          <p
+            class="section-subtitle text-xs md:text-sm max-w-md mx-auto"
+            id="category-description"
+          >
+            Notre collection de bijoux
+          </p>
+        </div>
+
+        <!-- Products Grid -->
+        <div id="products-container" class="product-grid grid gap-4">
+          <!-- Products loaded dynamically -->
+        </div>
+
+        <!-- Pagination Container -->
+        <div
+          id="pagination-container"
+          class="mt-8 flex justify-center items-center"
+        >
+          <!-- Pagination will be loaded here -->
+        </div>
+
+        <div id="loading-container" class="text-center py-8">
+          <div class="loading mx-auto mb-3"></div>
+          <p class="text-sm text-gray-600">Chargement...</p>
+        </div>
+
+        <div id="empty-state" class="text-center py-8 hidden">
+          <div
+            class="w-16 h-16 bg-gray-200 rounded-full flex items-center justify-center mx-auto mb-4"
+          >
+            <i class="fas fa-gem text-gray-400 text-2xl"></i>
+          </div>
+          <h3 class="text-lg font-bold text-gray-700 mb-2">Aucun produit</h3>
+          <p class="text-sm text-gray-600 mb-4">Bientôt disponible</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- Features Section -->
+    <section class="py-10 px-4 bg-white">
+      <div class="container mx-auto max-w-6xl">
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div class="text-center p-6 rounded-xl bg-pink-50">
+            <div
+              class="w-12 h-12 gradient-pink rounded-full flex items-center justify-center mx-auto mb-4"
+            >
+              <i class="fas fa-shipping-fast text-white"></i>
+            </div>
+            <h3 class="feature-title text-base mb-2">Livraison Rapide</h3>
+            <p class="feature-desc text-xs">48h en Algérie</p>
+          </div>
+
+          <div class="text-center p-6 rounded-xl bg-blue-50">
+            <div
+              class="w-12 h-12 bg-gradient-to-br from-blue-500 to-cyan-500 rounded-full flex items-center justify-center mx-auto mb-4"
+            >
+              <i class="fas fa-award text-white"></i>
+            </div>
+            <h3 class="feature-title text-base mb-2">Qualité</h3>
+            <p class="feature-desc text-xs">Matériaux premium</p>
+          </div>
+
+          <div class="text-center p-6 rounded-xl bg-yellow-50">
+            <div
+              class="w-12 h-12 bg-gradient-to-br from-yellow-500 to-orange-500 rounded-full flex items-center justify-center mx-auto mb-4"
+            >
+              <i class="fas fa-headset text-white"></i>
+            </div>
+            <h3 class="feature-title text-base mb-2">Support</h3>
+            <p class="feature-desc text-xs">Disponible 24/7</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Contact Section -->
+    <section
+      id="contact"
+      class="py-10 px-4 bg-gradient-to-br from-pink-50 to-purple-50"
+    >
+      <div class="container mx-auto max-w-6xl">
+        <div class="text-center mb-8">
+          <h2 class="section-title text-xl md:text-3xl font-bold mb-2">
+            Contact
+          </h2>
+          <p class="section-subtitle text-xs md:text-sm">
+            Nous répondons rapidement
+          </p>
+        </div>
+
+        <div class="max-w-sm mx-auto">
+          <div class="bg-white p-6 rounded-xl shadow-sm">
+            <div class="space-y-4">
+              <div class="flex items-center space-x-3">
+                <div
+                  class="w-10 h-10 gradient-pink rounded-lg flex items-center justify-center"
+                >
+                  <i class="fas fa-phone text-white"></i>
+                </div>
+                <div>
+                  <p class="contact-label text-xs">Téléphone</p>
+                  <a href="tel:+213551925318" class="contact-value text-sm"
+                    >+213 551925318</a
+                  >
+                </div>
+              </div>
+
+              <div class="flex items-center space-x-3">
+                <div
+                  class="w-10 h-10 gradient-pink rounded-lg flex items-center justify-center"
+                >
+                  <i class="fab fa-whatsapp text-white"></i>
+                </div>
+                <div>
+                  <p class="contact-label text-xs">WhatsApp</p>
+                  <a
+                    href="https://wa.me/213551925318"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    class="contact-value text-sm"
+                    >Commander ici</a
+                  >
+                </div>
+              </div>
+
+              <div class="flex items-center space-x-3">
+                <div
+                  class="w-10 h-10 gradient-pink rounded-lg flex items-center justify-content: center"
+                >
+                  <i class="fab fa-instagram text-white"></i>
+                </div>
+                <div>
+                  <p class="contact-label text-xs">Instagram</p>
+                  <a
+                    href="https://www.instagram.com/windy.luxury/"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    class="contact-value text-sm"
+                    >@windy.luxury</a
+                  >
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="py-8 px-4 bg-gray-900 text-white">
+      <div class="container mx-auto max-w-6xl text-center">
+        <div class="flex items-center justify-center space-x-2 mb-4">
+          <div
+            class="w-8 h-8 bg-gradient-to-br from-purple-500 to-pink-500 rounded-full flex items-center justify-center"
+          >
+            <i class="fas fa-gem text-white text-sm"></i>
+          </div>
+          <h3 class="nav-title text-lg">windy.luxury</h3>
+        </div>
+        <p class="footer-text text-xs mb-2">© 2024 windy.luxury</p>
+        <p class="footer-text text-xs max-w-sm mx-auto">
+          Bijoux de luxe pour votre élégance
+        </p>
+      </div>
+    </footer>
+
+    <!-- Scroll to Top Button -->
+    <div id="scrollToTop" class="scroll-to-top" onclick="scrollToTop()">
+      <i class="fas fa-chevron-up"></i>
+    </div>
+
+    <!-- Shopping Cart Modal -->
+    <div id="cartModal" class="modal-overlay">
+      <div class="modal-content cart-modal-content">
+        <div class="flex justify-between items-center mb-6">
+          <div>
+            <h3 class="text-lg font-bold text-gray-800">Votre Panier</h3>
+            <p class="text-sm text-gray-600" id="cartItemCount">0 articles</p>
+          </div>
+          <div class="flex items-center gap-2">
+            <button
+              onclick="emptyCart()"
+              class="empty-cart-btn"
+              title="Vider le panier"
+            >
+              <i class="fas fa-trash"></i>
+              Vider
+            </button>
+            <button
+              type="button"
+              onclick="closeCartModal()"
+              class="p-1"
+              title="Fermer le panier"
+              aria-label="Fermer le panier"
+            >
+              <i class="fas fa-times text-gray-600"></i>
+            </button>
+          </div>
+        </div>
+
+        <div class="cart-items-container" id="cartItemsContainer">
+          <!-- Cart items will be loaded here -->
+          <div class="cart-empty" id="emptyCartMessage">
+            <i class="fas fa-shopping-cart"></i>
+            <p>Votre panier est vide</p>
+            <p class="text-sm mt-2">Ajoutez des produits pour commander</p>
+          </div>
+        </div>
+
+        <div class="cart-summary" id="cartSummary" style="display: none">
+          <div class="flex justify-between items-center mb-6">
+            <span class="font-semibold text-gray-800 text-lg">Total</span>
+            <span class="cart-total" id="cartTotal">0 DA</span>
+          </div>
+
+          <form id="cartOrderForm" class="space-y-4">
+            <!-- Delivery Options -->
+            <div class="delivery-options">
+              <div
+                class="delivery-option selected"
+                onclick="selectDeliveryOption(this, 'home')"
+              >
+                <div class="delivery-icon">
+                  <i class="fas fa-home"></i>
+                </div>
+                <div class="delivery-text arabic-label">التوصيل للمنزل</div>
+                <div class="delivery-desc">Livraison à domicile</div>
+              </div>
+
+              <div
+                class="delivery-option"
+                onclick="selectDeliveryOption(this, 'office')"
+              >
+                <div class="delivery-icon">
+                  <i class="fas fa-building"></i>
+                </div>
+                <div class="delivery-text arabic-label">التوصيل للمكتب</div>
+                <div class="delivery-desc">Livraison au bureau</div>
+              </div>
+            </div>
+
+            <div>
+              <label
+                class="block text-xs font-medium text-gray-700 mb-1 arabic-label"
+                >الاسم الكامل *</label
+              >
+              <input
+                type="text"
+                id="cartCustomerName"
+                required
+                class="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:border-pink-500 focus:ring-1 focus:ring-pink-500 outline-none transition arabic-label"
+                placeholder="أدخل اسمك الكامل"
+              />
+            </div>
+
+            <div>
+              <label
+                class="block text-xs font-medium text-gray-700 mb-1 arabic-label"
+                >رقم الهاتف *</label
+              >
+              <input
+                type="tel"
+                id="cartCustomerPhone"
+                required
+                class="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:border-pink-500 focus:ring-1 focus:ring-pink-500 outline-none transition arabic-label"
+                placeholder="أدخل رقم هاتفك"
+              />
+            </div>
+
+            <div class="grid grid-cols-2 gap-3">
+              <div>
+                <label
+                  class="block text-xs font-medium text-gray-700 mb-1 arabic-label"
+                  >الولاية *</label
+                >
+                <select
+                  id="cartCustomerWilaya"
+                  required
+                  class="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:border-pink-500 focus:ring-1 focus:ring-pink-500 outline-none transition arabic-label"
+                >
+                  <option value="">اختر الولاية</option>
+                </select>
+              </div>
+              <div>
+                <label
+                  class="block text-xs font-medium text-gray-700 mb-1 arabic-label"
+                  >البلدية *</label
+                >
+                <input
+                  type="text"
+                  id="cartCustomerCommune"
+                  required
+                  class="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:border-pink-500 focus:ring-1 focus:ring-pink-500 outline-none transition arabic-label"
+                  placeholder="البلدية"
+                />
+              </div>
+            </div>
+
+            <div>
+              <select
+                id="cartCustomerSize"
+                required
+                class="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:border-pink-500 focus:ring-1 focus:ring-pink-500 outline-none transition arabic-label"
+              >
+                <option value="">اختر الحجم</option>
+                <option value="14">14</option>
+                <option value="15">15</option>
+                <option value="16">16</option>
+                <option value="17">17</option>
+                <option value="18">18</option>
+                <option value="19">19</option>
+                <option value="20">20</option>
+              </select>
+            </div>
+
+            <div class="pt-4">
+              <button
+                type="submit"
+                class="whatsapp-btn"
+                style="
+                  background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
+                "
+              >
+                <i class="fas fa-check-circle"></i>
+                <span>Confirmer la Commande</span>
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+
+    <!-- Order Modal (for single product) -->
+    <div id="orderModal" class="modal-overlay">
+      <div class="modal-content">
+        <div class="flex justify-between items-center mb-6">
+          <div>
+            <h3 class="text-lg font-bold text-gray-800 arabic-label">الطلب</h3>
+            <p class="text-sm text-gray-600" id="modalProductName">
+              Chargement...
+            </p>
+          </div>
+          <button
+            type="button"
+            onclick="closeModal()"
+            class="p-1"
+            aria-label="Fermer"
+            title="Fermer"
+          >
+            <i class="fas fa-times text-gray-600"></i>
+          </button>
+        </div>
+
+        <div
+          class="mb-6 p-4 bg-gradient-to-r from-pink-50 to-purple-50 rounded-xl border border-pink-100"
+        >
+          <div class="flex items-center justify-between">
+            <span class="text-sm font-semibold text-gray-800 arabic-label"
+              >سعر المنتج</span
+            >
+            <span class="text-xl font-bold text-pink-600" id="modalProductPrice"
+              >0 DA</span
+            >
+          </div>
+          <div id="modalSizeDisplay" class="hidden mt-2">
+            <span class="text-sm font-semibold text-gray-800 arabic-label"
+              >الحجم</span
+            >
+            <span class="text-sm text-pink-600" id="modalSelectedSize"></span>
+          </div>
+        </div>
+
+        <form id="orderForm" class="space-y-4">
+          <!-- Delivery Options -->
+          <div class="delivery-options">
+            <div
+              class="delivery-option selected"
+              onclick="selectDeliveryOption(this, 'home')"
+            >
+              <div class="delivery-icon">
+                <i class="fas fa-home"></i>
+              </div>
+              <div class="delivery-text arabic-label">التوصيل للمنزل</div>
+              <div class="delivery-desc">Livraison à domicile</div>
+            </div>
+
+            <div
+              class="delivery-option"
+              onclick="selectDeliveryOption(this, 'office')"
+            >
+              <div class="delivery-icon">
+                <i class="fas fa-building"></i>
+              </div>
+              <div class="delivery-text arabic-label">التوصيل للمكتب</div>
+              <div class="delivery-desc">Livraison au bureau</div>
+            </div>
+          </div>
+
+          <div>
+            <label
+              class="block text-xs font-medium text-gray-700 mb-1 arabic-label"
+              >الاسم الكامل *</label
+            >
+            <input
+              type="text"
+              id="customerName"
+              required
+              class="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:border-pink-500 focus:ring-1 focus:ring-pink-500 outline-none transition arabic-label"
+              placeholder="أدخل اسمك الكامل"
+            />
+          </div>
+
+          <div>
+            <label
+              class="block text-xs font-medium text-gray-700 mb-1 arabic-label"
+              >رقم الهاتف *</label
+            >
+            <input
+              type="tel"
+              id="customerPhone"
+              required
+              class="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:border-pink-500 focus:ring-1 focus:ring-pink-500 outline-none transition arabic-label"
+              placeholder="أدخل رقم هاتفك"
+            />
+          </div>
+
+          <div class="grid grid-cols-2 gap-3">
+            <div>
+              <label
+                class="block text-xs font-medium text-gray-700 mb-1 arabic-label"
+                >الولاية *</label
+              >
+              <select
+                id="customerWilaya"
+                required
+                class="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:border-pink-500 focus:ring-1 focus:ring-pink-500 outline-none transition arabic-label"
+              >
+                <option value="">اختر الولاية</option>
+              </select>
+            </div>
+            <div>
+              <label
+                class="block text-xs font-medium text-gray-700 mb-1 arabic-label"
+                >البلدية *</label
+              >
+              <input
+                type="text"
+                id="customerCommune"
+                required
+                class="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:border-pink-500 focus:ring-1 focus:ring-pink-500 outline-none transition arabic-label"
+                placeholder="البلدية"
+              />
+            </div>
+          </div>
+
+          <div id="sizeSelectionOrder" class="hidden">
+            <label
+              class="block text-xs font-medium text-gray-700 mb-1 arabic-label"
+            >
+              الحجم *
+            </label>
+            <select
+              id="customerSize"
+              required
+              class="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:border-pink-500 focus:ring-1 focus:ring-pink-500 outline-none transition arabic-label"
+            >
+              <option value="">اختر الحجم</option>
+              <option value="14">14</option>
+              <option value="15">15</option>
+              <option value="16">16</option>
+              <option value="17">17</option>
+              <option value="18">18</option>
+              <option value="19">19</option>
+              <option value="20">20</option>
+            </select>
+          </div>
+
+          <div class="pt-4">
+            <button
+              type="submit"
+              class="whatsapp-btn"
+              style="
+                background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
+              "
+            >
+              <i class="fas fa-check-circle"></i>
+              <span>Confirmer la Commande</span>
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- Product Details Modal -->
+    <div id="productDetailsModal" class="modal-overlay">
+      <div class="modal-content" style="max-width: 900px">
+        <div class="flex justify-between items-center mb-6">
+          <h3 class="text-lg font-bold text-gray-800">Détails du Produit</h3>
+          <button
+            type="button"
+            onclick="closeProductDetailsModal()"
+            class="p-1"
+            aria-label="Fermer"
+            title="Fermer"
+          >
+            <i class="fas fa-times text-gray-600"></i>
+          </button>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+          <!-- Product Image - Big display -->
+          <div class="flex items-center justify-center">
+            <img
+              id="productDetailsImage"
+              src=""
+              alt="Product Image"
+              class="product-details-image"
+              onerror="
+                this.src =
+                  'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgdmlld0JveD0iMCAwIDIwMCAyMDAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PHJlY3Qgd2lkdGg9IjIwMCIgaGVpZ2h0PSIyMDAiIGZpbGw9IiNGMEYwRjAiLz48cGF0aCBkPSJNNTAgNzVMMTAwIDEyNUwxNTAgNzUiIHN0cm9rZT0iI0YwNTc2QyIgc3Ryb2tlLXdpZHRoPSIyIi8+PGNpcmNsZSBjeD0iMTAwIiBjeT0iNzUiIHI9IjEwIiBmaWxsPSIjRjA1NzZDIi8+PGNpcmNsZSBjeD0iNTAiIGN5PSIxMjUiIHI9IjEwIiBmaWxsPSIjRjA1NzZDIi8+PGNpcmNsZSBjeD0iMTUwIiBjeT0iMTI1IiByPSIxMCIgZmlsbD0iI0YwNTc2QyIvPjwvc3ZnPg=='
+              "
+            />
+          </div>
+
+          <!-- Product Information -->
+          <div class="product-details-info">
+            <h1 id="productDetailsTitle" class="product-details-title">
+              Chargement...
+            </h1>
+
+            <!-- Stock info hidden - uncomment if needed -->
+            <!-- <div class="stock-info">
+              <span class="stock-label">Stock disponible:</span>
+              <span id="productDetailsStock" class="stock-value">0</span>
+            </div> -->
+
+            <div id="productDetailsPrice" class="product-details-price">
+              0 DA
+            </div>
+
+            <div class="text-sm text-gray-600 mb-2">
+              Catégorie:
+              <span id="productDetailsCategory" class="font-semibold"></span>
+            </div>
+
+            <p
+              id="productDetailsDescription"
+              class="product-details-description"
+            >
+              Aucune description disponible.
+            </p>
+
+            <!-- Size Selection (if applicable) -->
+            <div id="sizeSelection" class="size-selection hidden">
+              <div class="stock-label">اختر الحجم:</div>
+              <div id="sizeOptions" class="size-options">
+                <!-- Size options will be loaded dynamically -->
+              </div>
+            </div>
+
+            <!-- Product Actions -->
+            <div class="product-actions mt-4">
+              <button
+                id="addToCartFromDetails"
+                onclick="addToCartFromDetails()"
+                class="action-btn cart"
+              >
+                <i class="fas fa-cart-plus"></i>
+                Ajouter au Panier
+              </button>
+              <button
+                id="buyNowFromDetails"
+                onclick="buyNowFromDetails()"
+                class="action-btn buy"
+              >
+                <i class="fas fa-shopping-bag"></i>
+                Acheter Maintenant
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <style>
+      /* Correction pour les modales superposées */
+      .modal-overlay {
+        z-index: 1000;
+      }
+
+      .modal-overlay.active {
+        z-index: 2000;
+      }
+
+      .modal-content {
+        z-index: 2001;
+        position: relative;
+      }
+
+      /* Correction pour les boutons d'action dans l'admin */
+      .action-btn {
+        display: inline-flex !important;
+        align-items: center;
+        justify-content: center;
+        width: 32px;
+        height: 32px;
+        border-radius: 6px;
+        border: none;
+        cursor: pointer;
+        transition: all 0.2s ease;
+      }
+
+      .action-btn.edit {
+        background: #dbeafe;
+        color: #1d4ed8;
+      }
+
+      .action-btn.edit:hover {
+        background: #bfdbfe;
+      }
+
+      .action-btn.delete {
+        background: #fee2e2;
+        color: #dc2626;
+      }
+
+      .action-btn.delete:hover {
+        background: #fecaca;
+      }
+
+      /* Correction pour l'affichage des boutons dans le tableau */
+      td .action-btn {
+        display: inline-flex !important;
+        visibility: visible !important;
+        opacity: 1 !important;
+      }
+    </style>
+
+    <!-- JavaScript -->
+    <script src="index.js"></script>
+  </body>
+</html>

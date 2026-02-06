@@ -1,0 +1,1244 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>لوحة تحكم windy.luxury</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+    />
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      body {
+        font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+        background-color: #f5f5f5;
+      }
+
+      .sidebar {
+        width: 250px;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        height: 100vh;
+        position: fixed;
+        right: 0;
+        top: 0;
+        transition: all 0.3s;
+      }
+
+      .main-content {
+        margin-right: 250px;
+        padding: 20px;
+        transition: all 0.3s;
+      }
+
+      .sidebar.collapsed {
+        width: 80px;
+      }
+
+      .main-content.expanded {
+        margin-right: 80px;
+      }
+
+      .stat-card {
+        background: white;
+        border-radius: 10px;
+        padding: 20px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        transition: transform 0.3s;
+      }
+
+      .stat-card:hover {
+        transform: translateY(-5px);
+      }
+
+      .table-container {
+        background: white;
+        border-radius: 10px;
+        overflow: hidden;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+      }
+
+      table {
+        width: 100%;
+        border-collapse: collapse;
+      }
+
+      th {
+        background-color: #f8f9fa;
+        padding: 12px 15px;
+        text-align: right;
+        font-weight: 600;
+        color: #495057;
+        border-bottom: 2px solid #dee2e6;
+      }
+
+      td {
+        padding: 12px 15px;
+        border-bottom: 1px solid #dee2e6;
+        color: #6c757d;
+      }
+
+      tr:hover {
+        background-color: #f8f9fa;
+      }
+
+      .btn {
+        padding: 8px 16px;
+        border-radius: 6px;
+        font-weight: 500;
+        cursor: pointer;
+        transition: all 0.3s;
+        border: none;
+        font-size: 14px;
+      }
+
+      .btn-primary {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+      }
+
+      .btn-primary:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+      }
+
+      .btn-success {
+        background: linear-gradient(135deg, #4caf50 0%, #45a049 100%);
+        color: white;
+      }
+
+      .btn-danger {
+        background: linear-gradient(135deg, #f44336 0%, #d32f2f 100%);
+        color: white;
+      }
+
+      .btn-warning {
+        background: linear-gradient(135deg, #ff9800 0%, #f57c00 100%);
+        color: white;
+      }
+
+      .status-badge {
+        padding: 4px 12px;
+        border-radius: 20px;
+        font-size: 12px;
+        font-weight: 500;
+      }
+
+      .status-pending {
+        background-color: #fff3cd;
+        color: #856404;
+      }
+
+      .status-processing {
+        background-color: #cce5ff;
+        color: #004085;
+      }
+
+      .status-completed {
+        background-color: #d4edda;
+        color: #155724;
+      }
+
+      .status-cancelled {
+        background-color: #f8d7da;
+        color: #721c24;
+      }
+
+      .modal-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(0, 0, 0, 0.7);
+        display: none;
+        align-items: center;
+        justify-content: center;
+        z-index: 1000;
+      }
+
+      .modal-content {
+        background: white;
+        border-radius: 15px;
+        padding: 30px;
+        max-width: 800px;
+        width: 90%;
+        max-height: 90vh;
+        overflow-y: auto;
+        transform: translateY(20px);
+        transition: transform 0.3s ease;
+      }
+
+      .modal-overlay.active {
+        display: flex;
+      }
+
+      .modal-overlay.active .modal-content {
+        transform: translateY(0);
+      }
+
+      .form-group {
+        margin-bottom: 20px;
+      }
+
+      .form-label {
+        display: block;
+        margin-bottom: 8px;
+        font-weight: 500;
+        color: #495057;
+      }
+
+      .form-control {
+        width: 100%;
+        padding: 10px 15px;
+        border: 1px solid #dee2e6;
+        border-radius: 6px;
+        font-size: 14px;
+        transition: border-color 0.3s;
+      }
+
+      .form-control:focus {
+        outline: none;
+        border-color: #667eea;
+        box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+      }
+
+      .alert {
+        padding: 15px;
+        border-radius: 6px;
+        margin-bottom: 20px;
+        display: none;
+      }
+
+      .alert-success {
+        background-color: #d4edda;
+        color: #155724;
+        border: 1px solid #c3e6cb;
+      }
+
+      .alert-error {
+        background-color: #f8d7da;
+        color: #721c24;
+        border: 1px solid #f5c6cb;
+      }
+
+      .login-container {
+        max-width: 400px;
+        margin: 100px auto;
+        padding: 40px;
+        background: white;
+        border-radius: 15px;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+      }
+
+      .login-logo {
+        text-align: center;
+        margin-bottom: 30px;
+      }
+
+      .login-logo h1 {
+        color: #667eea;
+        font-size: 28px;
+        font-weight: 700;
+      }
+
+      .login-logo p {
+        color: #6c757d;
+        font-size: 14px;
+      }
+
+      @media (max-width: 768px) {
+        .sidebar {
+          width: 100%;
+          height: auto;
+          position: relative;
+        }
+
+        .sidebar.collapsed {
+          width: 100%;
+          height: 60px;
+        }
+
+        .main-content {
+          margin-right: 0;
+          padding: 15px;
+        }
+
+        .main-content.expanded {
+          margin-right: 0;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <!-- Login Page (shown by default) -->
+    <div id="loginPage" class="login-container">
+      <div class="login-logo">
+        <h1><i class="fas fa-gem"></i> windy.luxury</h1>
+        <p>لوحة تحكم إدارة المتجر</p>
+      </div>
+
+      <div id="loginAlert" class="alert" style="display: none"></div>
+
+      <form id="loginForm">
+        <div class="form-group">
+          <label class="form-label">اسم المستخدم</label>
+          <input
+            type="text"
+            id="username"
+            class="form-control"
+            required
+            placeholder="أدخل اسم المستخدم"
+            value="admin"
+          />
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">كلمة المرور</label>
+          <input
+            type="password"
+            id="password"
+            class="form-control"
+            required
+            placeholder="أدخل كلمة المرور"
+            value="windy123"
+          />
+        </div>
+
+        <button type="submit" class="btn btn-primary w-full">
+          <i class="fas fa-sign-in-alt"></i> تسجيل الدخول
+        </button>
+
+        <div class="mt-4 text-center text-sm text-gray-600">
+          <p>بيانات الدخول الافتراضية:</p>
+          <p>اسم المستخدم: <strong>admin</strong></p>
+          <p>كلمة المرور: <strong>windy123</strong></p>
+        </div>
+      </form>
+    </div>
+
+    <!-- Dashboard (hidden by default) -->
+    <div id="dashboardPage" style="display: none">
+      <!-- Sidebar -->
+      <div class="sidebar" id="sidebar">
+        <div class="p-6">
+          <div class="flex items-center justify-between mb-8">
+            <div class="flex items-center space-x-3">
+              <div
+                class="w-10 h-10 bg-white rounded-full flex items-center justify-center"
+              >
+                <i class="fas fa-gem text-purple-600"></i>
+              </div>
+              <div>
+                <h2 class="text-lg font-bold">windy.luxury</h2>
+                <p class="text-xs opacity-80">لوحة التحكم</p>
+              </div>
+            </div>
+            <button onclick="toggleSidebar()" class="text-white">
+              <i class="fas fa-bars"></i>
+            </button>
+          </div>
+
+          <nav class="space-y-2">
+            <a
+              href="#"
+              onclick="showSection('dashboard')"
+              class="flex items-center space-x-3 p-3 rounded-lg hover:bg-white/10 transition active-nav"
+            >
+              <i class="fas fa-home"></i>
+              <span id="navDashboard">لوحة التحكم</span>
+            </a>
+
+            <a
+              href="#"
+              onclick="showSection('products')"
+              class="flex items-center space-x-3 p-3 rounded-lg hover:bg-white/10 transition"
+            >
+              <i class="fas fa-box"></i>
+              <span id="navProducts">المنتجات</span>
+            </a>
+
+            <a
+              href="#"
+              onclick="showSection('orders')"
+              class="flex items-center space-x-3 p-3 rounded-lg hover:bg-white/10 transition"
+            >
+              <i class="fas fa-shopping-cart"></i>
+              <span id="navOrders">الطلبات</span>
+            </a>
+
+            <a
+              href="#"
+              onclick="showSection('categories')"
+              class="flex items-center space-x-3 p-3 rounded-lg hover:bg-white/10 transition"
+            >
+              <i class="fas fa-tags"></i>
+              <span id="navCategories">الفئات</span>
+            </a>
+
+            <a
+              href="#"
+              onclick="showSection('customers')"
+              class="flex items-center space-x-3 p-3 rounded-lg hover:bg-white/10 transition"
+            >
+              <i class="fas fa-users"></i>
+              <span id="navCustomers">العملاء</span>
+            </a>
+
+            <a
+              href="#"
+              onclick="showSection('settings')"
+              class="flex items-center space-x-3 p-3 rounded-lg hover:bg-white/10 transition"
+            >
+              <i class="fas fa-cog"></i>
+              <span id="navSettings">الإعدادات</span>
+            </a>
+
+            <hr class="border-white/20 my-4" />
+
+            <a
+              href="/"
+              target="_blank"
+              class="flex items-center space-x-3 p-3 rounded-lg hover:bg-white/10 transition"
+            >
+              <i class="fas fa-external-link-alt"></i>
+              <span id="navWebsite">عرض الموقع</span>
+            </a>
+
+            <button
+              onclick="logout()"
+              class="flex items-center space-x-3 p-3 rounded-lg hover:bg-white/10 transition w-full text-right"
+            >
+              <i class="fas fa-sign-out-alt"></i>
+              <span id="navLogout">تسجيل الخروج</span>
+            </button>
+          </nav>
+        </div>
+      </div>
+
+      <!-- Main Content -->
+      <div class="main-content" id="mainContent">
+        <!-- Top Bar -->
+        <div class="flex justify-between items-center mb-8">
+          <h1 id="pageTitle" class="text-2xl font-bold text-gray-800">
+            لوحة التحكم
+          </h1>
+          <div class="flex items-center space-x-4">
+            <div class="text-right">
+              <p class="text-sm font-medium text-gray-700" id="adminName">
+                مدير النظام
+              </p>
+              <p class="text-xs text-gray-500" id="currentDate">...</p>
+            </div>
+            <div
+              class="w-10 h-10 bg-gradient-to-br from-purple-500 to-pink-500 rounded-full flex items-center justify-center"
+            >
+              <i class="fas fa-user text-white"></i>
+            </div>
+          </div>
+        </div>
+
+        <!-- Dashboard Section -->
+        <div id="dashboardSection">
+          <!-- Stats Cards -->
+          <div
+            class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8"
+          >
+            <div class="stat-card">
+              <div class="flex items-center justify-between">
+                <div>
+                  <p class="text-sm text-gray-500">إجمالي المنتجات</p>
+                  <h3
+                    class="text-2xl font-bold text-gray-800"
+                    id="totalProducts"
+                  >
+                    0
+                  </h3>
+                </div>
+                <div
+                  class="w-12 h-12 bg-gradient-to-br from-blue-500 to-cyan-500 rounded-full flex items-center justify-center"
+                >
+                  <i class="fas fa-box text-white text-xl"></i>
+                </div>
+              </div>
+              <div class="mt-4">
+                <span class="text-sm text-green-600" id="productsChange">
+                  <i class="fas fa-arrow-up"></i> 0%
+                </span>
+                <span class="text-xs text-gray-500 mr-2">من الشهر الماضي</span>
+              </div>
+            </div>
+
+            <div class="stat-card">
+              <div class="flex items-center justify-between">
+                <div>
+                  <p class="text-sm text-gray-500">إجمالي الطلبات</p>
+                  <h3 class="text-2xl font-bold text-gray-800" id="totalOrders">
+                    0
+                  </h3>
+                </div>
+                <div
+                  class="w-12 h-12 bg-gradient-to-br from-green-500 to-emerald-500 rounded-full flex items-center justify-center"
+                >
+                  <i class="fas fa-shopping-cart text-white text-xl"></i>
+                </div>
+              </div>
+              <div class="mt-4">
+                <span class="text-sm text-green-600" id="ordersChange">
+                  <i class="fas fa-arrow-up"></i> 0%
+                </span>
+                <span class="text-xs text-gray-500 mr-2">من الشهر الماضي</span>
+              </div>
+            </div>
+
+            <div class="stat-card">
+              <div class="flex items-center justify-between">
+                <div>
+                  <p class="text-sm text-gray-500">إجمالي المبيعات</p>
+                  <h3
+                    class="text-2xl font-bold text-gray-800"
+                    id="totalRevenue"
+                  >
+                    0 DA
+                  </h3>
+                </div>
+                <div
+                  class="w-12 h-12 bg-gradient-to-br from-yellow-500 to-orange-500 rounded-full flex items-center justify-center"
+                >
+                  <i class="fas fa-money-bill-wave text-white text-xl"></i>
+                </div>
+              </div>
+              <div class="mt-4">
+                <span class="text-sm text-green-600" id="revenueChange">
+                  <i class="fas fa-arrow-up"></i> 0%
+                </span>
+                <span class="text-xs text-gray-500 mr-2">من الشهر الماضي</span>
+              </div>
+            </div>
+
+            <div class="stat-card">
+              <div class="flex items-center justify-between">
+                <div>
+                  <p class="text-sm text-gray-500">العملاء الجدد</p>
+                  <h3
+                    class="text-2xl font-bold text-gray-800"
+                    id="newCustomers"
+                  >
+                    0
+                  </h3>
+                </div>
+                <div
+                  class="w-12 h-12 bg-gradient-to-br from-purple-500 to-pink-500 rounded-full flex items-center justify-center"
+                >
+                  <i class="fas fa-users text-white text-xl"></i>
+                </div>
+              </div>
+              <div class="mt-4">
+                <span class="text-sm text-green-600" id="customersChange">
+                  <i class="fas fa-arrow-up"></i> 0%
+                </span>
+                <span class="text-xs text-gray-500 mr-2">من الشهر الماضي</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Recent Orders -->
+          <div class="table-container mb-8">
+            <div class="p-4 border-b flex justify-between items-center">
+              <h3 class="text-lg font-bold text-gray-800">أحدث الطلبات</h3>
+              <button onclick="showSection('orders')" class="btn btn-primary">
+                عرض الكل
+              </button>
+            </div>
+            <div class="overflow-x-auto">
+              <table>
+                <thead>
+                  <tr>
+                    <th>رقم الطلب</th>
+                    <th>العميل</th>
+                    <th>التاريخ</th>
+                    <th>المبلغ</th>
+                    <th>الحالة</th>
+                    <th>الإجراءات</th>
+                  </tr>
+                </thead>
+                <tbody id="recentOrdersTable">
+                  <!-- Will be loaded dynamically -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- Low Stock Products -->
+          <div class="table-container">
+            <div class="p-4 border-b flex justify-between items-center">
+              <h3 class="text-lg font-bold text-gray-800">
+                المنتجات منخفضة المخزون
+              </h3>
+              <button onclick="showSection('products')" class="btn btn-primary">
+                إدارة المنتجات
+              </button>
+            </div>
+            <div class="overflow-x-auto">
+              <table>
+                <thead>
+                  <tr>
+                    <th>الصورة</th>
+                    <th>اسم المنتج</th>
+                    <th>الفئة</th>
+                    <th>السعر</th>
+                    <th>المخزون</th>
+                    <th>الإجراءات</th>
+                  </tr>
+                </thead>
+                <tbody id="lowStockTable">
+                  <!-- Will be loaded dynamically -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- Products Section -->
+        <div id="productsSection" style="display: none">
+          <div class="flex justify-between items-center mb-6">
+            <h2 class="text-2xl font-bold text-gray-800">إدارة المنتجات</h2>
+            <button onclick="showAddProductModal()" class="btn btn-primary">
+              <i class="fas fa-plus"></i> إضافة منتج جديد
+            </button>
+          </div>
+
+          <div class="table-container">
+            <div class="p-4 border-b">
+              <div class="flex justify-between items-center">
+                <div class="flex items-center space-x-4">
+                  <input
+                    type="text"
+                    id="productSearch"
+                    class="form-control"
+                    placeholder="بحث عن منتج..."
+                    style="width: 300px"
+                  />
+                  <select
+                    id="categoryFilter"
+                    class="form-control"
+                    style="width: 200px"
+                  >
+                    <option value="">جميع الفئات</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+            <div class="overflow-x-auto">
+              <table>
+                <thead>
+                  <tr>
+                    <th>الصورة</th>
+                    <th>اسم المنتج</th>
+                    <th>الفئة</th>
+                    <th>السعر</th>
+                    <th>المخزون</th>
+                    <th>مميز</th>
+                    <th>تاريخ الإضافة</th>
+                    <th>الإجراءات</th>
+                  </tr>
+                </thead>
+                <tbody id="productsTable">
+                  <!-- Will be loaded dynamically -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- Orders Section -->
+        <div id="ordersSection" style="display: none">
+          <div class="flex justify-between items-center mb-6">
+            <h2 class="text-2xl font-bold text-gray-800">إدارة الطلبات</h2>
+            <div class="flex items-center space-x-4">
+              <select
+                id="orderStatusFilter"
+                class="form-control"
+                style="width: 200px"
+              >
+                <option value="">جميع الحالات</option>
+                <option value="pending">قيد الانتظار</option>
+                <option value="processing">قيد المعالجة</option>
+                <option value="completed">مكتمل</option>
+                <option value="cancelled">ملغي</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="table-container">
+            <div class="overflow-x-auto">
+              <table>
+                <thead>
+                  <tr>
+                    <th>رقم الطلب</th>
+                    <th>العميل</th>
+                    <th>المنتجات</th>
+                    <th>التاريخ</th>
+                    <th>المبلغ</th>
+                    <th>الحالة</th>
+                    <th>الإجراءات</th>
+                  </tr>
+                </thead>
+                <tbody id="ordersTable">
+                  <!-- Will be loaded dynamically -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- Categories Section -->
+        <div id="categoriesSection" style="display: none">
+          <div class="flex justify-between items-center mb-6">
+            <h2 class="text-2xl font-bold text-gray-800">إدارة الفئات</h2>
+            <button onclick="showAddCategoryModal()" class="btn btn-primary">
+              <i class="fas fa-plus"></i> إضافة فئة جديدة
+            </button>
+          </div>
+
+          <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <!-- Categories will be loaded here -->
+          </div>
+        </div>
+
+        <!-- Customers Section -->
+        <div id="customersSection" style="display: none">
+          <h2 class="text-2xl font-bold text-gray-800 mb-6">إدارة العملاء</h2>
+          <!-- Customers content will be loaded here -->
+        </div>
+
+        <!-- Settings Section -->
+        <div id="settingsSection" style="display: none">
+          <h2 class="text-2xl font-bold text-gray-800 mb-6">
+            إدارة أسعار التوصيل
+          </h2>
+
+          <!-- Store Info -->
+          <div class="table-container mb-6">
+            <div class="p-4 border-b">
+              <h3 class="text-lg font-bold text-gray-800">معلومات المتجر</h3>
+            </div>
+            <div class="p-4">
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div class="form-group">
+                  <label class="form-label">اسم المتجر</label>
+                  <input
+                    type="text"
+                    id="storeName"
+                    class="form-control"
+                    placeholder="اسم المتجر"
+                  />
+                </div>
+                <div class="form-group">
+                  <label class="form-label">رقم الهاتف</label>
+                  <input
+                    type="text"
+                    id="storePhone"
+                    class="form-control"
+                    placeholder="رقم الهاتف"
+                  />
+                </div>
+              </div>
+              <button onclick="saveStoreInfo()" class="btn btn-primary mt-4">
+                <i class="fas fa-save"></i> حفظ المعلومات
+              </button>
+            </div>
+          </div>
+
+          <!-- Delivery Wilayas -->
+          <div class="table-container">
+            <div class="p-4 border-b flex justify-between items-center">
+              <h3 class="text-lg font-bold text-gray-800">
+                أسعار التوصيل حسب الولاية
+              </h3>
+              <button onclick="showAddWilayaModal()" class="btn btn-primary">
+                <i class="fas fa-plus"></i> إضافة ولاية
+              </button>
+            </div>
+            <div class="overflow-x-auto">
+              <table>
+                <thead>
+                  <tr>
+                    <th>الولاية</th>
+                    <th>سعر التوصيل للمنزل (DA)</th>
+                    <th>سعر التوصيل للمكتب (DA)</th>
+                    <th>الإجراءات</th>
+                  </tr>
+                </thead>
+                <tbody id="wilayasTable">
+                  <!-- Will be loaded dynamically -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Add/Edit Product Modal -->
+    <div id="productModal" class="modal-overlay">
+      <div class="modal-content">
+        <div class="flex justify-between items-center mb-6">
+          <h3 class="text-xl font-bold text-gray-800" id="productModalTitle">
+            إضافة منتج جديد
+          </h3>
+          <button
+            onclick="closeModal()"
+            class="text-gray-500 hover:text-gray-700"
+          >
+            <i class="fas fa-times text-lg"></i>
+          </button>
+        </div>
+
+        <div id="productAlert" class="alert" style="display: none"></div>
+
+        <form id="productForm" enctype="multipart/form-data">
+          <input type="hidden" id="productId" />
+
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div class="form-group">
+              <label class="form-label">اسم المنتج *</label>
+              <input
+                type="text"
+                id="productName"
+                class="form-control"
+                required
+              />
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">الفئة *</label>
+              <select id="productCategory" class="form-control" required>
+                <option value="">اختر الفئة</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">السعر (DA) *</label>
+              <input
+                type="number"
+                id="productPrice"
+                class="form-control"
+                required
+                min="0"
+                step="0.01"
+              />
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">السعر القديم (DA)</label>
+              <input
+                type="number"
+                id="productOldPrice"
+                class="form-control"
+                min="0"
+                step="0.01"
+              />
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">المخزون *</label>
+              <input
+                type="number"
+                id="productStock"
+                class="form-control"
+                required
+                min="0"
+              />
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">الأحجام (اختياري)</label>
+              <div class="sizes-editor">
+                <div class="sizes-header">
+                  <span>الحجم</span>
+                  <span>المخزون</span>
+                </div>
+                <div class="sizes-row">
+                  <label class="size-label"
+                    ><input
+                      type="checkbox"
+                      id="size14cb"
+                      onchange="toggleSizeStock('14')"
+                    />
+                    14</label
+                  >
+                  <input
+                    type="number"
+                    id="size14"
+                    class="size-stock-input"
+                    min="0"
+                    placeholder="0"
+                    disabled
+                  />
+                </div>
+                <div class="sizes-row">
+                  <label class="size-label"
+                    ><input
+                      type="checkbox"
+                      id="size15cb"
+                      onchange="toggleSizeStock('15')"
+                    />
+                    15</label
+                  >
+                  <input
+                    type="number"
+                    id="size15"
+                    class="size-stock-input"
+                    min="0"
+                    placeholder="0"
+                    disabled
+                  />
+                </div>
+                <div class="sizes-row">
+                  <label class="size-label"
+                    ><input
+                      type="checkbox"
+                      id="size16cb"
+                      onchange="toggleSizeStock('16')"
+                    />
+                    16</label
+                  >
+                  <input
+                    type="number"
+                    id="size16"
+                    class="size-stock-input"
+                    min="0"
+                    placeholder="0"
+                    disabled
+                  />
+                </div>
+                <div class="sizes-row">
+                  <label class="size-label"
+                    ><input
+                      type="checkbox"
+                      id="size17cb"
+                      onchange="toggleSizeStock('17')"
+                    />
+                    17</label
+                  >
+                  <input
+                    type="number"
+                    id="size17"
+                    class="size-stock-input"
+                    min="0"
+                    placeholder="0"
+                    disabled
+                  />
+                </div>
+                <div class="sizes-row">
+                  <label class="size-label"
+                    ><input
+                      type="checkbox"
+                      id="size18cb"
+                      onchange="toggleSizeStock('18')"
+                    />
+                    18</label
+                  >
+                  <input
+                    type="number"
+                    id="size18"
+                    class="size-stock-input"
+                    min="0"
+                    placeholder="0"
+                    disabled
+                  />
+                </div>
+                <div class="sizes-row">
+                  <label class="size-label"
+                    ><input
+                      type="checkbox"
+                      id="size19cb"
+                      onchange="toggleSizeStock('19')"
+                    />
+                    19</label
+                  >
+                  <input
+                    type="number"
+                    id="size19"
+                    class="size-stock-input"
+                    min="0"
+                    placeholder="0"
+                    disabled
+                  />
+                </div>
+                <div class="sizes-row">
+                  <label class="size-label"
+                    ><input
+                      type="checkbox"
+                      id="size20cb"
+                      onchange="toggleSizeStock('20')"
+                    />
+                    20</label
+                  >
+                  <input
+                    type="number"
+                    id="size20"
+                    class="size-stock-input"
+                    min="0"
+                    placeholder="0"
+                    disabled
+                  />
+                </div>
+              </div>
+              <p class="text-xs text-gray-500 mt-1">
+                حدد الحجم وأدخل المخزون لكل حجم
+              </p>
+            </div>
+
+            <style>
+              .sizes-editor {
+                border: 1px solid #e5e7eb;
+                border-radius: 8px;
+                padding: 10px;
+                background: #f9fafb;
+              }
+              .sizes-header {
+                display: flex;
+                justify-content: space-between;
+                padding: 5px 10px;
+                font-weight: 600;
+                font-size: 12px;
+                color: #6b7280;
+                border-bottom: 1px solid #e5e7eb;
+                margin-bottom: 8px;
+              }
+              .sizes-row {
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                padding: 5px 10px;
+                margin-bottom: 5px;
+                background: white;
+                border-radius: 4px;
+              }
+              .size-label {
+                display: flex;
+                align-items: center;
+                gap: 8px;
+                cursor: pointer;
+                width: 80px;
+              }
+              .size-stock-input {
+                width: 80px;
+                padding: 5px 8px;
+                border: 1px solid #d1d5db;
+                border-radius: 4px;
+                text-align: center;
+              }
+              .size-stock-input:disabled {
+                background: #e5e7eb;
+                cursor: not-allowed;
+              }
+            </style>
+
+            <div class="form-group">
+              <label class="form-label">الصورة</label>
+              <input
+                type="file"
+                id="productImage"
+                class="form-control"
+                accept="image/*"
+              />
+              <div id="imagePreview" class="mt-2" style="display: none">
+                <img
+                  id="previewImage"
+                  class="w-32 h-32 object-cover rounded-lg"
+                />
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">مميز</label>
+              <select id="productFeatured" class="form-control">
+                <option value="false">لا</option>
+                <option value="true">نعم</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">الوصف</label>
+            <textarea
+              id="productDescription"
+              class="form-control"
+              rows="4"
+            ></textarea>
+          </div>
+
+          <div class="flex justify-end space-x-3 mt-6">
+            <button type="button" onclick="closeModal()" class="btn">
+              إلغاء
+            </button>
+            <button type="submit" class="btn btn-primary">
+              <span id="productSubmitText">إضافة المنتج</span>
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- Add/Edit Category Modal -->
+    <div id="categoryModal" class="modal-overlay">
+      <div class="modal-content" style="max-width: 500px">
+        <div class="flex justify-between items-center mb-6">
+          <h3 class="text-xl font-bold text-gray-800" id="categoryModalTitle">
+            إضافة فئة جديدة
+          </h3>
+          <button
+            onclick="closeModal()"
+            class="text-gray-500 hover:text-gray-700"
+          >
+            <i class="fas fa-times text-lg"></i>
+          </button>
+        </div>
+
+        <form id="categoryForm">
+          <input type="hidden" id="categoryId" />
+
+          <div class="form-group">
+            <label class="form-label">اسم الفئة *</label>
+            <input
+              type="text"
+              id="categoryName"
+              class="form-control"
+              required
+            />
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">الوصف</label>
+            <textarea
+              id="categoryDescription"
+              class="form-control"
+              rows="3"
+            ></textarea>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">الأيقونة</label>
+            <select id="categoryIcon" class="form-control">
+              <option value="fa-gem">جوهرة</option>
+              <option value="fa-ring">خاتم</option>
+              <option value="fa-bracelet">سوار</option>
+              <option value="fa-necklace">قلادة</option>
+              <option value="fa-earrings">أقراط</option>
+              <option value="fa-watch">ساعة</option>
+              <option value="fa-gift">هدية</option>
+              <option value="fa-crown">تاج</option>
+              <option value="fa-star">نجمة</option>
+              <option value="fa-heart">قلب</option>
+            </select>
+          </div>
+
+          <div class="flex justify-end space-x-3 mt-6">
+            <button type="button" onclick="closeModal()" class="btn">
+              إلغاء
+            </button>
+            <button type="submit" class="btn btn-primary">
+              <span id="categorySubmitText">إضافة الفئة</span>
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- Order Details Modal -->
+    <div id="orderDetailsModal" class="modal-overlay">
+      <div class="modal-content" style="max-width: 700px">
+        <div class="flex justify-between items-center mb-6">
+          <h3 class="text-xl font-bold text-gray-800">تفاصيل الطلب</h3>
+          <button
+            onclick="closeModal()"
+            class="text-gray-500 hover:text-gray-700"
+          >
+            <i class="fas fa-times text-lg"></i>
+          </button>
+        </div>
+
+        <div id="orderDetailsContent">
+          <!-- Order details will be loaded here -->
+        </div>
+      </div>
+    </div>
+
+    <!-- Wilaya Modal -->
+    <div id="wilayaModal" class="modal-overlay">
+      <div class="modal-content" style="max-width: 500px">
+        <div class="flex justify-between items-center mb-6">
+          <h3 class="text-xl font-bold text-gray-800" id="wilayaModalTitle">
+            إضافة ولاية
+          </h3>
+          <button
+            onclick="closeModal()"
+            class="text-gray-500 hover:text-gray-700"
+          >
+            <i class="fas fa-times text-lg"></i>
+          </button>
+        </div>
+
+        <form id="wilayaForm">
+          <input type="hidden" id="wilayaIndex" />
+
+          <div class="form-group">
+            <label class="form-label">اسم الولاية *</label>
+            <input
+              type="text"
+              id="wilayaName"
+              class="form-control"
+              required
+              placeholder="مثال: Alger"
+            />
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">سعر التوصيل للمنزل (DA) *</label>
+            <input
+              type="number"
+              id="wilayaHomePrice"
+              class="form-control"
+              required
+              min="0"
+              placeholder="سعر التوصيل للمنزل"
+            />
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">سعر التوصيل للمكتب (DA) *</label>
+            <input
+              type="number"
+              id="wilayaOfficePrice"
+              class="form-control"
+              required
+              min="0"
+              placeholder="سعر التوصيل للمكتب"
+            />
+          </div>
+
+          <div class="flex justify-end space-x-3 mt-6">
+            <button type="button" onclick="closeModal()" class="btn">
+              إلغاء
+            </button>
+            <button type="submit" class="btn btn-primary">
+              <span id="wilayaSubmitText">حفظ</span>
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <script src="admin.js"></script>
+  </body>
+</html>

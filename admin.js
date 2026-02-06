@@ -1,0 +1,1024 @@
+// Admin Dashboard JavaScript - Express API Version
+// Configuration
+const CONFIG = {
+  API_BASE: "http://localhost:4000/api",
+};
+
+// Default categories
+const defaultCategories = [
+  { id: "1", name: "Parure", icon: "fas fa-layer-group" },
+  { id: "2", name: "Bracelet", icon: "fas fa-band-aid" },
+  { id: "3", name: "Bague", icon: "fas fa-ring" },
+  { id: "4", name: "Boucles", icon: "fas fa-gem" },
+  { id: "5", name: "Montre", icon: "fas fa-clock" },
+  { id: "6", name: "Collier", icon: "fas fa-necklace" },
+];
+
+// State
+let products = [];
+let categories = [...defaultCategories];
+let orders = [];
+let settings = {};
+let editingProductId = null;
+let editingCategoryId = null;
+
+// Initialize
+document.addEventListener("DOMContentLoaded", function () {
+  setupEventListeners();
+  updateDate();
+});
+
+function updateDate() {
+  const now = new Date();
+  const options = { year: "numeric", month: "long", day: "numeric" };
+  document.getElementById("currentDate").textContent = now.toLocaleDateString(
+    "ar-SA",
+    options,
+  );
+}
+
+// Event Listeners
+function setupEventListeners() {
+  // Login form
+  document.getElementById("loginForm").addEventListener("submit", handleLogin);
+
+  // Product form
+  document
+    .getElementById("productForm")
+    .addEventListener("submit", handleProductSubmit);
+
+  // Category form
+  document
+    .getElementById("categoryForm")
+    .addEventListener("submit", handleCategorySubmit);
+
+  // Image preview
+  document
+    .getElementById("productImage")
+    .addEventListener("change", previewImage);
+
+  // Search and filters
+  document
+    .getElementById("productSearch")
+    .addEventListener("input", filterProducts);
+  document
+    .getElementById("categoryFilter")
+    .addEventListener("change", filterProducts);
+  document
+    .getElementById("orderStatusFilter")
+    .addEventListener("change", loadOrders);
+}
+
+// Toggle size stock input when checkbox is clicked
+function toggleSizeStock(size) {
+  const checkbox = document.getElementById(`size${size}cb`);
+  const stockInput = document.getElementById(`size${size}`);
+
+  if (checkbox.checked) {
+    stockInput.disabled = false;
+    if (stockInput.value === "") {
+      stockInput.value = "0";
+    }
+  } else {
+    stockInput.disabled = true;
+    stockInput.value = "";
+  }
+}
+
+// Populate size inputs when editing a product
+function populateSizeInputs(product) {
+  // Reset all
+  for (let i = 14; i <= 20; i++) {
+    const checkbox = document.getElementById(`size${i}cb`);
+    const stockInput = document.getElementById(`size${i}`);
+    if (checkbox) {
+      checkbox.checked = false;
+      stockInput.disabled = true;
+      stockInput.value = "";
+    }
+  }
+
+  // If product has sizes, populate them
+  if (product.sizes && Array.isArray(product.sizes)) {
+    product.sizes.forEach((sizeItem) => {
+      const size = typeof sizeItem === "string" ? sizeItem : sizeItem.size;
+      const stock = typeof sizeItem === "object" ? sizeItem.stock : 0;
+
+      const checkbox = document.getElementById(`size${size}cb`);
+      const stockInput = document.getElementById(`size${size}`);
+
+      if (checkbox) {
+        checkbox.checked = true;
+        stockInput.disabled = false;
+        stockInput.value = stock;
+      }
+    });
+  }
+}
+
+// Login Handler
+function handleLogin(e) {
+  e.preventDefault();
+  const username = document.getElementById("username").value;
+  const password = document.getElementById("password").value;
+
+  // Simple validation (in production, use proper authentication)
+  if (username === "admin" && password === "windy123") {
+    localStorage.setItem("adminAuth", "true");
+    showDashboard();
+    loadAllData();
+  } else {
+    showAlert("loginAlert", "بيانات الدخول غير صحيحة", "error");
+  }
+}
+
+// Logout
+function logout() {
+  localStorage.removeItem("adminAuth");
+  document.getElementById("loginPage").style.display = "block";
+  document.getElementById("dashboardPage").style.display = "none";
+}
+
+// Check auth on load
+if (localStorage.getItem("adminAuth") === "true") {
+  showDashboard();
+  loadAllData();
+}
+
+function showDashboard() {
+  document.getElementById("loginPage").style.display = "none";
+  document.getElementById("dashboardPage").style.display = "block";
+}
+
+// Load All Data
+async function loadAllData() {
+  await Promise.all([
+    loadCategories(),
+    loadProducts(),
+    loadOrders(),
+    loadSettings(),
+  ]);
+  updateDashboard();
+}
+
+// Categories
+async function loadCategories() {
+  try {
+    const response = await fetch(`${CONFIG.API_BASE}/categories`);
+    if (response.ok) {
+      categories = await response.json();
+    }
+  } catch (error) {
+    console.error("Error loading categories:", error);
+    categories = [...defaultCategories];
+  }
+  updateCategoryFilter();
+}
+
+// Products
+async function loadProducts() {
+  try {
+    const response = await fetch(`${CONFIG.API_BASE}/products`);
+    if (response.ok) {
+      products = await response.json();
+    }
+  } catch (error) {
+    console.error("Error loading products:", error);
+    products = [];
+  }
+}
+
+// Orders
+async function loadOrders() {
+  try {
+    const response = await fetch(`${CONFIG.API_BASE}/orders`);
+    if (response.ok) {
+      orders = await response.json();
+    }
+  } catch (error) {
+    console.error("Error loading orders:", error);
+    orders = [];
+  }
+}
+
+// Settings
+async function loadSettings() {
+  try {
+    const response = await fetch(`${CONFIG.API_BASE}/settings`);
+    if (response.ok) {
+      settings = await response.json();
+    }
+  } catch (error) {
+    console.error("Error loading settings:", error);
+    settings = {};
+  }
+}
+
+// Update Dashboard
+function updateDashboard() {
+  // Stats
+  document.getElementById("totalProducts").textContent = products.length;
+  document.getElementById("totalOrders").textContent = orders.length;
+
+  // Calculate revenue
+  const revenue = orders.reduce((sum, order) => sum + (order.total || 0), 0);
+  document.getElementById("totalRevenue").textContent =
+    `${revenue.toLocaleString()} DA`;
+
+  // Recent orders
+  const recentOrders = orders.slice(-5).reverse();
+  renderRecentOrders(recentOrders);
+
+  // Low stock products
+  const lowStock = products.filter((p) => p.stock < 5);
+  renderLowStockProducts(lowStock);
+
+  // Products table
+  renderProductsTable(products);
+}
+
+// Render Recent Orders
+function renderRecentOrders(ordersList) {
+  const tbody = document.getElementById("recentOrdersTable");
+  if (!tbody) return;
+
+  if (ordersList.length === 0) {
+    tbody.innerHTML =
+      '<tr><td colspan="6" class="text-center py-8">لا توجد طلبات</td></tr>';
+    return;
+  }
+
+  tbody.innerHTML = ordersList
+    .map(
+      (order) => `
+    <tr>
+      <td>${order.id?.slice(-6) || "N/A"}</td>
+      <td>${order.customerName || "عميل"}</td>
+      <td>${formatDate(order.createdAt)}</td>
+      <td>${(order.total || 0).toLocaleString()} DA</td>
+      <td><span class="status-badge status-${order.status || "pending"}">${getStatusText(
+        order.status,
+      )}</span></td>
+      <td>
+        <button onclick="viewOrder('${
+          order.id
+        }')" class="btn btn-primary" style="padding: 4px 8px; font-size: 12px;">
+          <i class="fas fa-eye"></i>
+        </button>
+      </td>
+    </tr>
+  `,
+    )
+    .join("");
+}
+
+// Render Low Stock Products
+function renderLowStockProducts(productsList) {
+  const tbody = document.getElementById("lowStockTable");
+  if (!tbody) return;
+
+  if (productsList.length === 0) {
+    tbody.innerHTML =
+      '<tr><td colspan="6" class="text-center py-8">لا توجد منتجات منخفضة المخزون</td></tr>';
+    return;
+  }
+
+  tbody.innerHTML = productsList
+    .map(
+      (product) => `
+    <tr>
+      <td><img src="${product.image || ""}" alt="${
+        product.name
+      }" class="w-10 h-10 object-cover rounded" onerror="this.src='data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAiIGhlaWdodD0iNDAiIHZpZXdCb3g9IjAgMCA0MCA0MCIgZmlsbD0iI0YwRjBGMCI+PHJlY3Qgd2lkdGg9IjQwIiBoZWlnaHQ9IjQwIiBmaWxsPSIjRjBGMDBBIi8+PC9zdmc+'"></td>
+      <td>${product.name || product.title || "-"}</td>
+      <td>${product.category || "-"}</td>
+      <td>${(product.price || 0).toLocaleString()} DA</td>
+      <td class="text-red-600 font-bold">${product.stock || 0}</td>
+      <td>
+        <button onclick="editProduct('${
+          product.id
+        }')" class="btn btn-primary" style="padding: 4px 8px; font-size: 12px;">
+          <i class="fas fa-edit"></i>
+        </button>
+      </td>
+    </tr>
+  `,
+    )
+    .join("");
+}
+
+// Render Products Table
+function renderProductsTable(productsList) {
+  const tbody = document.getElementById("productsTable");
+  if (!tbody) return;
+
+  if (productsList.length === 0) {
+    tbody.innerHTML =
+      '<tr><td colspan="8" class="text-center py-8">لا توجد منتجات</td></tr>';
+    return;
+  }
+
+  tbody.innerHTML = productsList
+    .map(
+      (product) => `
+    <tr>
+      <td><img src="${product.image || ""}" alt="${
+        product.name
+      }" class="w-10 h-10 object-cover rounded" onerror="this.src='data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAiIGhlaWdodD0iNDAiIHZpZXdCb3g9IjAgMCA0MCA0MCIgZmlsbD0iI0YwRjBGMCI+PHJlY3Qgd2lkdGg9IjQwIiBoZWlnaHQ9IjQwIiBmaWxsPSIjRjBGMDBBIi8+PC9zdmc+'"></td>
+      <td>${product.name || product.title || "-"}</td>
+      <td>${product.category || "-"}</td>
+      <td>${(product.price || 0).toLocaleString()} DA</td>
+      <td>${product.stock || 0}</td>
+      <td>${product.featured ? '<i class="fas fa-star text-yellow-500"></i>' : "-"}</td>
+      <td>${formatDate(product.createdAt)}</td>
+      <td>
+        <button onclick="editProduct('${
+          product.id
+        }')" class="btn btn-primary" style="padding: 4px 8px;">
+          <i class="fas fa-edit"></i>
+        </button>
+        <button onclick="deleteProduct('${
+          product.id
+        }')" class="btn btn-danger" style="padding: 4px 8px;">
+          <i class="fas fa-trash"></i>
+        </button>
+      </td>
+    </tr>
+  `,
+    )
+    .join("");
+}
+
+// Render Orders Table
+function renderOrdersTable(ordersList) {
+  const tbody = document.getElementById("ordersTable");
+  if (!tbody) return;
+
+  if (ordersList.length === 0) {
+    tbody.innerHTML =
+      '<tr><td colspan="7" class="text-center py-8">لا توجد طلبات</td></tr>';
+    return;
+  }
+
+  tbody.innerHTML = ordersList
+    .map(
+      (order) => `
+    <tr>
+      <td>${order.id?.slice(-6) || "N/A"}</td>
+      <td>${order.customerName || "عميل"}</td>
+      <td>${order.items?.length || 0} منتجات</td>
+      <td>${formatDate(order.createdAt)}</td>
+      <td>${(order.total || 0).toLocaleString()} DA</td>
+      <td><span class="status-badge status-${order.status || "pending"}">${getStatusText(
+        order.status,
+      )}</span></td>
+      <td>
+        <button onclick="viewOrder('${
+          order.id
+        }')" class="btn btn-primary" style="padding: 4px 8px;">
+          <i class="fas fa-eye"></i>
+        </button>
+        <select onchange="updateOrderStatus('${
+          order.id
+        }', this.value)" class="form-control" style="width: auto; padding: 4px 8px;">
+          <option value="pending" ${order.status === "pending" ? "selected" : ""}>قيد الانتظار</option>
+          <option value="processing" ${
+            order.status === "processing" ? "selected" : ""
+          }>قيد المعالجة</option>
+          <option value="completed" ${
+            order.status === "completed" ? "selected" : ""
+          }>مكتمل</option>
+          <option value="cancelled" ${
+            order.status === "cancelled" ? "selected" : ""
+          }>ملغي</option>
+        </select>
+      </td>
+    </tr>
+  `,
+    )
+    .join("");
+}
+
+// Show Section
+function showSection(sectionId) {
+  // Hide all sections
+  document.getElementById("dashboardSection").style.display = "none";
+  document.getElementById("productsSection").style.display = "none";
+  document.getElementById("ordersSection").style.display = "none";
+  document.getElementById("categoriesSection").style.display = "none";
+  document.getElementById("customersSection").style.display = "none";
+  document.getElementById("settingsSection").style.display = "none";
+
+  // Show selected section
+  document.getElementById(`${sectionId}Section`).style.display = "block";
+
+  // Update page title
+  const titles = {
+    dashboard: "لوحة التحكم",
+    products: "إدارة المنتجات",
+    orders: "إدارة الطلبات",
+    categories: "إدارة الفئات",
+    customers: "إدارة العملاء",
+    settings: "الإعدادات",
+  };
+  document.getElementById("pageTitle").textContent =
+    titles[sectionId] || sectionId;
+
+  // Load section data
+  if (sectionId === "orders") {
+    renderOrdersTable(orders);
+  } else if (sectionId === "settings") {
+    loadSettings();
+  }
+}
+
+// Toggle Sidebar
+function toggleSidebar() {
+  document.getElementById("sidebar").classList.toggle("collapsed");
+  document.getElementById("mainContent").classList.toggle("expanded");
+}
+
+// Category Filter
+function updateCategoryFilter() {
+  const filter = document.getElementById("categoryFilter");
+  if (!filter) return;
+
+  filter.innerHTML = '<option value="">جميع الفئات</option>';
+  categories.forEach((cat) => {
+    const option = document.createElement("option");
+    option.value = cat.name;
+    option.textContent = cat.name;
+    filter.appendChild(option);
+  });
+}
+
+// Filter Products
+function filterProducts() {
+  const search = document.getElementById("productSearch").value.toLowerCase();
+  const category = document.getElementById("categoryFilter").value;
+
+  const filtered = products.filter((p) => {
+    const matchSearch =
+      (p.name || "").toLowerCase().includes(search) ||
+      (p.title || "").toLowerCase().includes(search);
+    const matchCategory = !category || p.category === category;
+    return matchSearch && matchCategory;
+  });
+
+  renderProductsTable(filtered);
+}
+
+// Refresh Products
+async function refreshProducts() {
+  await loadProducts();
+  renderProductsTable(products);
+  updateDashboard();
+}
+
+// Product Modal
+function showAddProductModal() {
+  editingProductId = null;
+  document.getElementById("productModalTitle").textContent = "إضافة منتج جديد";
+  document.getElementById("productSubmitText").textContent = "إضافة المنتج";
+  document.getElementById("productForm").reset();
+  document.getElementById("productId").value = "";
+  document.getElementById("imagePreview").style.display = "none";
+
+  // Reset size inputs
+  populateSizeInputs({});
+
+  // Populate categories
+  const select = document.getElementById("productCategory");
+  select.innerHTML = '<option value="">اختر الفئة</option>';
+  categories.forEach((cat) => {
+    const option = document.createElement("option");
+    option.value = cat.name;
+    option.textContent = cat.name;
+    select.appendChild(option);
+  });
+
+  document.getElementById("productModal").classList.add("active");
+}
+
+function editProduct(productId) {
+  const product = products.find((p) => p.id === productId);
+  if (!product) return;
+
+  editingProductId = productId;
+  document.getElementById("productModalTitle").textContent = "تعديل المنتج";
+  document.getElementById("productSubmitText").textContent = "تحديث المنتج";
+  document.getElementById("productId").value = productId;
+  document.getElementById("productName").value =
+    product.name || product.title || "";
+  document.getElementById("productCategory").value = product.category || "";
+  document.getElementById("productPrice").value = product.price || 0;
+  document.getElementById("productOldPrice").value = product.oldPrice || "";
+  document.getElementById("productStock").value = product.stock || 0;
+  document.getElementById("productDescription").value =
+    product.description || "";
+  document.getElementById("productFeatured").value = product.featured
+    ? "true"
+    : "false";
+
+  // Populate size inputs
+  populateSizeInputs(product);
+
+  // Show image preview if exists
+  if (product.image) {
+    document.getElementById("previewImage").src = product.image;
+    document.getElementById("imagePreview").style.display = "block";
+  } else {
+    document.getElementById("imagePreview").style.display = "none";
+  }
+
+  // Populate categories
+  const select = document.getElementById("productCategory");
+  select.innerHTML = '<option value="">اختر الفئة</option>';
+  categories.forEach((cat) => {
+    const option = document.createElement("option");
+    option.value = cat.name;
+    option.textContent = cat.name;
+    if (cat.name === product.category) option.selected = true;
+    select.appendChild(option);
+  });
+
+  document.getElementById("productModal").classList.add("active");
+}
+
+// Product Submit Handler
+async function handleProductSubmit(e) {
+  e.preventDefault();
+
+  const name = document.getElementById("productName").value;
+  const category = document.getElementById("productCategory").value;
+  const price = document.getElementById("productPrice").value;
+  const oldPrice = document.getElementById("productOldPrice").value;
+  const stock = document.getElementById("productStock").value;
+  const description = document.getElementById("productDescription").value;
+  const featured = document.getElementById("productFeatured").value;
+  const sizesInput = document.getElementById("productSizes").value;
+  const imageFile = document.getElementById("productImage").files[0];
+
+  if (!name) {
+    showAlert("productAlert", "اسم المنتج مطلوب", "error");
+    return;
+  }
+
+  // Collect sizes from the size selector
+  let sizes = [];
+  for (let i = 14; i <= 20; i++) {
+    const checkbox = document.getElementById(`size${i}cb`);
+    const stockInput = document.getElementById(`size${i}`);
+
+    if (checkbox && checkbox.checked) {
+      sizes.push({
+        size: i.toString(),
+        stock: parseInt(stockInput.value) || 0,
+      });
+    }
+  }
+
+  // Create FormData for file upload
+  const formData = new FormData();
+  formData.append("name", name);
+  formData.append("title", name);
+  formData.append("category", category);
+  formData.append("price", price);
+  formData.append("oldPrice", oldPrice);
+  formData.append("stock", stock);
+  formData.append("description", description);
+  formData.append("featured", featured);
+  formData.append("status", "active");
+
+  if (sizes.length > 0) {
+    formData.append("sizes", JSON.stringify(sizes));
+  }
+
+  if (imageFile) {
+    formData.append("image", imageFile);
+  }
+
+  try {
+    let response;
+    if (editingProductId) {
+      formData.append("id", editingProductId);
+      response = await fetch(`${CONFIG.API_BASE}/products/${editingProductId}`, {
+        method: "PUT",
+        body: formData,
+      });
+    } else {
+      formData.append("id", Date.now().toString());
+      formData.append("createdAt", new Date().toISOString());
+      response = await fetch(`${CONFIG.API_BASE}/products`, {
+        method: "POST",
+        body: formData,
+      });
+    }
+
+    if (response.ok) {
+      closeModal();
+      await refreshProducts();
+      showAlert("productAlert", "تم حفظ المنتج بنجاح", "success");
+    } else {
+      const errorText = await response.text();
+      console.error("Server error:", errorText);
+      throw new Error("Failed to save product");
+    }
+  } catch (error) {
+    console.error("Error saving product:", error);
+    showAlert("productAlert", "حدث خطأ أثناء حفظ المنتج", "error");
+  }
+}
+
+// Delete Product
+async function deleteProduct(productId) {
+  if (!confirm("هل أنت متأكد من حذف هذا المنتج؟")) return;
+
+  try {
+    const response = await fetch(`${CONFIG.API_BASE}/products/${productId}`, {
+      method: "DELETE",
+    });
+
+    if (response.ok) {
+      await refreshProducts();
+    } else {
+      throw new Error("Failed to delete product");
+    }
+  } catch (error) {
+    console.error("Error deleting product:", error);
+    alert("حدث خطأ أثناء حذف المنتج");
+  }
+}
+
+// View Order
+function viewOrder(orderId) {
+  const order = orders.find((o) => o.id === orderId);
+  if (!order) return;
+
+  const content = `
+    <div class="space-y-4">
+      <div class="grid grid-cols-2 gap-4">
+        <div>
+          <p class="text-sm text-gray-600">رقم الطلب:</p>
+          <p class="font-bold">${order.id?.slice(-6) || "N/A"}</p>
+        </div>
+        <div>
+          <p class="text-sm text-gray-600">الحالة:</p>
+          <p><span class="status-badge status-${order.status || "pending"}">${getStatusText(
+            order.status,
+          )}</span></p>
+        </div>
+        <div>
+          <p class="text-sm text-gray-600">العميل:</p>
+          <p class="font-bold">${order.customerName || "عميل"}</p>
+        </div>
+        <div>
+          <p class="text-sm text-gray-600">الهاتف:</p>
+          <p class="font-bold">${order.customerPhone || "-"}</p>
+        </div>
+        <div>
+          <p class="text-sm text-gray-600">الولاية:</p>
+          <p class="font-bold">${order.wilaya || "-"}</p>
+        </div>
+        <div>
+          <p class="text-sm text-gray-600">البلدية:</p>
+          <p class="font-bold">${order.commune || "-"}</p>
+        </div>
+        <div>
+          <p class="text-sm text-gray-600">المجموع:</p>
+          <p class="font-bold text-lg">${(order.total || 0).toLocaleString()} DA</p>
+        </div>
+        <div>
+          <p class="text-sm text-gray-600">التاريخ:</p>
+          <p class="font-bold">${formatDate(order.createdAt)}</p>
+        </div>
+      </div>
+    </div>
+  `;
+
+  document.getElementById("orderDetailsContent").innerHTML = content;
+  document.getElementById("orderDetailsModal").classList.add("active");
+}
+
+// Update Order Status
+async function updateOrderStatus(orderId, status) {
+  try {
+    const response = await fetch(`${CONFIG.API_BASE}/orders/${orderId}`, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ status }),
+    });
+
+    if (response.ok) {
+      await loadOrders();
+      updateDashboard();
+    }
+  } catch (error) {
+    console.error("Error updating order status:", error);
+  }
+}
+
+// Category Modal
+function showAddCategoryModal() {
+  editingCategoryId = null;
+  document.getElementById("categoryModalTitle").textContent = "إضافة فئة جديدة";
+  document.getElementById("categorySubmitText").textContent = "إضافة الفئة";
+  document.getElementById("categoryForm").reset();
+  document.getElementById("categoryId").value = "";
+  document.getElementById("categoryModal").classList.add("active");
+}
+
+// Category Submit Handler
+async function handleCategorySubmit(e) {
+  e.preventDefault();
+
+  const categoryData = {
+    id: editingCategoryId || Date.now().toString(),
+    name: document.getElementById("categoryName").value,
+    description: document.getElementById("categoryDescription").value,
+    icon: document.getElementById("categoryIcon").value,
+  };
+
+  if (!categoryData.name) {
+    alert("اسم الفئة مطلوب");
+    return;
+  }
+
+  // Save to local storage (categories are stored in products.json)
+  // For now, just close the modal
+  closeModal();
+  await loadCategories();
+}
+
+// Image Preview
+function previewImage(e) {
+  const file = e.target.files[0];
+  if (!file) return;
+
+  const reader = new FileReader();
+  reader.onload = function (e) {
+    document.getElementById("previewImage").src = e.target.result;
+    document.getElementById("imagePreview").style.display = "block";
+  };
+  reader.readAsDataURL(file);
+}
+
+// Close Modal
+function closeModal() {
+  document.querySelectorAll(".modal-overlay").forEach((modal) => {
+    modal.classList.remove("active");
+  });
+  editingProductId = null;
+  editingCategoryId = null;
+}
+
+// Show Alert
+function showAlert(elementId, message, type) {
+  const alert = document.getElementById(elementId);
+  alert.textContent = message;
+  alert.className = `alert alert-${type}`;
+  alert.style.display = "block";
+
+  setTimeout(() => {
+    alert.style.display = "none";
+  }, 3000);
+}
+
+// Helper Functions
+function formatDate(dateString) {
+  if (!dateString) return "-";
+  const date = new Date(dateString);
+  return date.toLocaleDateString("ar-SA", {
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+  });
+}
+
+function getStatusText(status) {
+  const statusMap = {
+    pending: "قيد الانتظار",
+    processing: "قيد المعالجة",
+    completed: "مكتمل",
+    cancelled: "ملغي",
+  };
+  return statusMap[status] || "قيد الانتظار";
+}
+
+// Make functions globally available
+window.showSection = showSection;
+window.toggleSidebar = toggleSidebar;
+window.logout = logout;
+window.showAddProductModal = showAddProductModal;
+window.editProduct = editProduct;
+window.deleteProduct = deleteProduct;
+window.viewOrder = viewOrder;
+window.updateOrderStatus = updateOrderStatus;
+window.showAddCategoryModal = showAddCategoryModal;
+window.closeModal = closeModal;
+window.refreshProducts = refreshProducts;
+window.showAddWilayaModal = showAddWilayaModal;
+window.saveWilaya = saveWilaya;
+window.deleteWilaya = deleteWilaya;
+window.saveStoreInfo = saveStoreInfo;
+
+// ==================== WILAYA MANAGEMENT ====================
+
+let editingWilayaIndex = null;
+
+// Load Settings and render wilayas
+async function loadSettings() {
+  try {
+    const response = await fetch(`${CONFIG.API_BASE}/settings`);
+    if (response.ok) {
+      settings = await response.json();
+      renderWilayasTable();
+
+      // Populate store info
+      document.getElementById("storeName").value = settings.storeName || "";
+      document.getElementById("storePhone").value = settings.storePhone || "";
+    }
+  } catch (error) {
+    console.error("Error loading settings:", error);
+  }
+}
+
+function renderWilayasTable() {
+  const tbody = document.getElementById("wilayasTable");
+  if (!tbody) return;
+
+  const wilayas = settings.deliveryWilayas || [];
+
+  if (wilayas.length === 0) {
+    tbody.innerHTML =
+      '<tr><td colspan="4" class="text-center py-8">لا توجد ولايات مضافة</td></tr>';
+    return;
+  }
+
+  tbody.innerHTML = wilayas
+    .map(
+      (wilaya, index) => `
+    <tr>
+      <td class="font-bold">${wilaya.name}</td>
+      <td>${wilaya.homePrice?.toLocaleString() || 0} DA</td>
+      <td>${wilaya.officePrice?.toLocaleString() || 0} DA</td>
+      <td>
+        <button onclick="editWilaya(${index})" class="btn btn-primary" style="padding: 4px 8px;">
+          <i class="fas fa-edit"></i>
+        </button>
+        <button onclick="deleteWilaya(${index})" class="btn btn-danger" style="padding: 4px 8px;">
+          <i class="fas fa-trash"></i>
+        </button>
+      </td>
+    </tr>
+  `,
+    )
+    .join("");
+}
+
+function showAddWilayaModal(index = null) {
+  editingWilayaIndex = index;
+
+  if (index !== null && settings.deliveryWilayas[index]) {
+    const wilaya = settings.deliveryWilayas[index];
+    document.getElementById("wilayaModalTitle").textContent = "تعديل الولاية";
+    document.getElementById("wilayaName").value = wilaya.name || "";
+    document.getElementById("wilayaHomePrice").value = wilaya.homePrice || 0;
+    document.getElementById("wilayaOfficePrice").value =
+      wilaya.officePrice || 0;
+    document.getElementById("wilayaIndex").value = index;
+  } else {
+    document.getElementById("wilayaModalTitle").textContent = "إضافة ولاية";
+    document.getElementById("wilayaForm").reset();
+    document.getElementById("wilayaIndex").value = "";
+  }
+
+  document.getElementById("wilayaModal").classList.add("active");
+}
+
+function editWilaya(index) {
+  showAddWilayaModal(index);
+}
+
+async function saveWilaya(e) {
+  e.preventDefault();
+
+  const name = document.getElementById("wilayaName").value;
+  const homePrice =
+    parseFloat(document.getElementById("wilayaHomePrice").value) || 0;
+  const officePrice =
+    parseFloat(document.getElementById("wilayaOfficePrice").value) || 0;
+  const index = document.getElementById("wilayaIndex").value;
+
+  if (!name) {
+    alert("اسم الولاية مطلوب");
+    return;
+  }
+
+  const wilayaData = { name, homePrice, officePrice };
+
+  try {
+    // Load current settings
+    const response = await fetch(`${CONFIG.API_BASE}/settings`);
+    if (response.ok) {
+      const currentSettings = await response.json();
+
+      // Initialize deliveryWilayas array if not exists
+      if (!currentSettings.deliveryWilayas) {
+        currentSettings.deliveryWilayas = [];
+      }
+
+      // Add or update wilaya
+      if (index !== "") {
+        currentSettings.deliveryWilayas[parseInt(index)] = wilayaData;
+      } else {
+        currentSettings.deliveryWilayas.push(wilayaData);
+      }
+
+      // Save settings
+      const saveResponse = await fetch(`${CONFIG.API_BASE}/settings`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(currentSettings),
+      });
+
+      if (saveResponse.ok) {
+        settings = currentSettings;
+        renderWilayasTable();
+        closeModal();
+        alert("تم حفظ الولاية بنجاح");
+      } else {
+        throw new Error("Failed to save wilaya");
+      }
+    }
+  } catch (error) {
+    console.error("Error saving wilaya:", error);
+    alert("حدث خطأ أثناء حفظ الولاية");
+  }
+}
+
+async function deleteWilaya(index) {
+  if (!confirm("هل أنت متأكد من حذف هذه الولاية؟")) return;
+
+  try {
+    const response = await fetch(`${CONFIG.API_BASE}/settings`);
+    if (response.ok) {
+      const currentSettings = await response.json();
+
+      if (currentSettings.deliveryWilayas) {
+        currentSettings.deliveryWilayas.splice(index, 1);
+
+        const saveResponse = await fetch(`${CONFIG.API_BASE}/settings`, {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(currentSettings),
+        });
+
+        if (saveResponse.ok) {
+          settings = currentSettings;
+          renderWilayasTable();
+        }
+      }
+    }
+  } catch (error) {
+    console.error("Error deleting wilaya:", error);
+    alert("حدث خطأ أثناء حذف الولاية");
+  }
+}
+
+async function saveStoreInfo() {
+  const storeName = document.getElementById("storeName").value;
+  const storePhone = document.getElementById("storePhone").value;
+
+  try {
+    const response = await fetch(`${CONFIG.API_BASE}/settings`);
+    if (response.ok) {
+      const currentSettings = await response.json();
+
+      currentSettings.storeName = storeName;
+      currentSettings.storePhone = storePhone;
+
+      const saveResponse = await fetch(`${CONFIG.API_BASE}/settings`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(currentSettings),
+      });
+
+      if (saveResponse.ok) {
+        settings = currentSettings;
+        alert("تم حفظ معلومات المتجر بنجاح");
+      }
+    }
+  } catch (error) {
+    console.error("Error saving store info:", error);
+    alert("حدث خطأ أثناء حفظ معلومات المتجر");
+  }
+}
+
+// Add event listener for wilaya form
+document.addEventListener("DOMContentLoaded", function () {
+  const wilayaForm = document.getElementById("wilayaForm");
+  if (wilayaForm) {
+    wilayaForm.addEventListener("submit", saveWilaya);
+  }
+});

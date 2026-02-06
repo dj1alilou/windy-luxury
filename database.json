@@ -1,0 +1,103 @@
+{
+  "products": [],
+  "orders": [],
+  "categories": [
+    {
+      "id": "1",
+      "name": "Parure",
+      "icon": "fas fa-layer-group",
+      "status": "active"
+    },
+    {
+      "id": "2",
+      "name": "Bracelet",
+      "icon": "fas fa-band-aid",
+      "status": "active"
+    },
+    {
+      "id": "3",
+      "name": "Bague",
+      "icon": "fas fa-ring",
+      "status": "active"
+    },
+    {
+      "id": "4",
+      "name": "Boucles",
+      "icon": "fas fa-gem",
+      "status": "active"
+    },
+    {
+      "id": "5",
+      "name": "Montre",
+      "icon": "fas fa-clock",
+      "status": "active"
+    },
+    {
+      "id": "6",
+      "name": "Collier",
+      "icon": "fas fa-necklace",
+      "status": "active"
+    }
+  ],
+  "settings": {
+    "storeName": "windy.luxury",
+    "storePhone": "+213 774 72 75 59",
+    "storeEmail": "",
+    "storeAddress": "Alger, Algérie",
+    "storeDescription": "Bijoux de luxe",
+    "adminUsername": "admin",
+    "adminPassword": "admin123",
+    "deliveryWilayas": [
+      {
+        "name": "Alger",
+        "homePrice": 400,
+        "officePrice": 300
+      },
+      {
+        "name": "Blida",
+        "homePrice": 500,
+        "officePrice": 400
+      },
+      {
+        "name": "Tipaza",
+        "homePrice": 600,
+        "officePrice": 500
+      },
+      {
+        "name": "Boumerdes",
+        "homePrice": 600,
+        "officePrice": 500
+      },
+      {
+        "name": "Oran",
+        "homePrice": 1000,
+        "officePrice": 800
+      },
+      {
+        "name": "Constantine",
+        "homePrice": 1200,
+        "officePrice": 1000
+      },
+      {
+        "name": "Annaba",
+        "homePrice": 1300,
+        "officePrice": 1100
+      },
+      {
+        "name": "Tizi Ouzou",
+        "homePrice": 800,
+        "officePrice": 600
+      },
+      {
+        "name": "Sétif",
+        "homePrice": 1000,
+        "officePrice": 800
+      },
+      {
+        "name": "Batna",
+        "homePrice": 1100,
+        "officePrice": 900
+      }
+    ]
+  }
+}
