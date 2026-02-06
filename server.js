@@ -37,6 +37,7 @@ const upload = multer({
 
 // Database file path
 const DB_FILE = path.join(__dirname, "data", "products.json");
+const ORDERS_FILE = path.join(__dirname, "data", "orders.json");
 
 // Default categories
 const defaultCategories = [
@@ -288,15 +289,39 @@ app.put("/api/settings", (req, res) => {
 
 // ==================== ORDERS ====================
 
+// Read orders
+function readOrders() {
+  try {
+    if (fs.existsSync(ORDERS_FILE)) {
+      const data = fs.readFileSync(ORDERS_FILE, "utf8");
+      return JSON.parse(data);
+    }
+  } catch (error) {
+    console.error("Error reading orders:", error);
+  }
+  return [];
+}
+
+// Write orders
+function writeOrders(orders) {
+  try {
+    fs.writeFileSync(ORDERS_FILE, JSON.stringify(orders, null, 2));
+    return true;
+  } catch (error) {
+    console.error("Error writing orders:", error);
+    return false;
+  }
+}
+
 // GET all orders
 app.get("/api/orders", (req, res) => {
-  const db = readDatabase();
-  res.json(db.orders || []);
+  const orders = readOrders();
+  res.json(orders);
 });
 
 // POST create order
 app.post("/api/orders", (req, res) => {
-  const db = readDatabase();
+  const orders = readOrders();
   const order = {
     id: Date.now().toString(),
     ...req.body,
@@ -304,30 +329,28 @@ app.post("/api/orders", (req, res) => {
     createdAt: new Date().toISOString(),
   };
 
-  if (!db.orders) db.orders = [];
-  db.orders.push(order);
-  writeDatabase(db);
+  orders.push(order);
+  writeOrders(orders);
 
   res.status(201).json(order);
 });
 
 // PUT update order
 app.put("/api/orders/:id", (req, res) => {
-  const db = readDatabase();
-  if (!db.orders) db.orders = [];
-  const index = db.orders.findIndex((o) => o.id === req.params.id);
+  const orders = readOrders();
+  const index = orders.findIndex((o) => o.id === req.params.id);
 
   if (index === -1) {
     return res.status(404).json({ error: "Order not found" });
   }
 
-  db.orders[index] = {
-    ...db.orders[index],
+  orders[index] = {
+    ...orders[index],
     ...req.body,
     updatedAt: new Date().toISOString(),
   };
-  writeDatabase(db);
-  res.json(db.orders[index]);
+  writeOrders(orders);
+  res.json(orders[index]);
 });
 
 // DELETE order

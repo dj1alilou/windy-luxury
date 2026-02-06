@@ -3,6 +3,7 @@ node_modules
 .env.local
 uploads/*
 !uploads/.gitkeep
+data/orders.json
 .DS_Store
 *.log
 npm-debug.log*
