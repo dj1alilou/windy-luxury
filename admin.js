@@ -1,7 +1,7 @@
 // Admin Dashboard JavaScript - Express API Version
-// Configuration
+// Configuration - Use environment variable or default to localhost
 const CONFIG = {
-  API_BASE: "https://windy-luxury.onrender.com/api",
+  API_BASE: import.meta.env.VITE_API_URL || "http://localhost:4000/api",
 };
 
 // Default categories
@@ -52,10 +52,13 @@ function setupEventListeners() {
     .getElementById("categoryForm")
     .addEventListener("submit", handleCategorySubmit);
 
-  // Image preview
-  document
-    .getElementById("productImage")
-    .addEventListener("change", previewImage);
+  // Image upload handlers for 4 separate inputs
+  for (let i = 1; i <= 4; i++) {
+    const input = document.getElementById(`productImage${i}`);
+    if (input) {
+      input.addEventListener("change", (e) => previewSingleImage(e, i));
+    }
+  }
 
   // Search and filters
   document
@@ -482,7 +485,8 @@ function showAddProductModal() {
   document.getElementById("productSubmitText").textContent = "إضافة المنتج";
   document.getElementById("productForm").reset();
   document.getElementById("productId").value = "";
-  document.getElementById("imagePreview").style.display = "none";
+  document.getElementById("imagePreviews").innerHTML = "";
+  document.getElementById("existingImages").value = "[]";
 
   // Reset size inputs
   populateSizeInputs({});
@@ -523,13 +527,12 @@ function editProduct(productId) {
   // Populate size inputs
   populateSizeInputs(product);
 
-  // Show image preview if exists
-  if (product.image) {
-    document.getElementById("previewImage").src = product.image;
-    document.getElementById("imagePreview").style.display = "block";
-  } else {
-    document.getElementById("imagePreview").style.display = "none";
-  }
+  // Show existing images
+  const existingImages =
+    product.images || (product.image ? [product.image] : []);
+  document.getElementById("existingImages").value =
+    JSON.stringify(existingImages);
+  renderExistingImages(existingImages);
 
   // Populate categories
   const select = document.getElementById("productCategory");
@@ -558,7 +561,17 @@ async function handleProductSubmit(e) {
   const featured = document.getElementById("productFeatured").value;
   const sizesElement = document.getElementById("productSizes");
   const sizesInput = sizesElement ? sizesElement.value : "";
-  const imageFile = document.getElementById("productImage").files[0];
+
+  // Collect files from 4 separate inputs
+  const imageFiles = [];
+  for (let i = 1; i <= 4; i++) {
+    const input = document.getElementById(`productImage${i}`);
+    if (input && input.files.length > 0) {
+      imageFiles.push(input.files[0]);
+    }
+  }
+
+  const existingImages = document.getElementById("existingImages").value;
 
   if (!name) {
     showAlert("productAlert", "اسم المنتج مطلوب", "error");
@@ -590,13 +603,17 @@ async function handleProductSubmit(e) {
   formData.append("description", description);
   formData.append("featured", featured);
   formData.append("status", "active");
+  formData.append("existingImages", existingImages);
 
   if (sizes.length > 0) {
     formData.append("sizes", JSON.stringify(sizes));
   }
 
-  if (imageFile) {
-    formData.append("image", imageFile);
+  // Add new image files
+  if (imageFiles && imageFiles.length > 0) {
+    for (let i = 0; i < imageFiles.length; i++) {
+      formData.append("images", imageFiles[i]);
+    }
   }
 
   try {
@@ -781,17 +798,130 @@ async function handleCategorySubmit(e) {
   await loadCategories();
 }
 
-// Image Preview
-function previewImage(e) {
-  const file = e.target.files[0];
-  if (!file) return;
+// Image Previews for Multiple Images
+function previewImages(e) {
+  const files = e.target.files;
+  const previewContainer = document.getElementById("imagePreviews");
+  previewContainer.innerHTML = "";
 
-  const reader = new FileReader();
-  reader.onload = function (e) {
-    document.getElementById("previewImage").src = e.target.result;
-    document.getElementById("imagePreview").style.display = "block";
-  };
-  reader.readAsDataURL(file);
+  if (!files || files.length === 0) {
+    return;
+  }
+
+  Array.from(files).forEach((file, index) => {
+    const reader = new FileReader();
+    reader.onload = function (e) {
+      const div = document.createElement("div");
+      div.className = "relative";
+      div.innerHTML = `
+        <img src="${e.target.result}" class="w-20 h-20 object-cover rounded-lg" />
+        <button type="button" onclick="removeImage(${index})" 
+          class="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs">
+          <i class="fas fa-times"></i>
+        </button>
+      `;
+      previewContainer.appendChild(div);
+    };
+    reader.readAsDataURL(file);
+  });
+}
+
+// Preview single image from one of the 4 inputs
+function previewSingleImage(e, imageNum) {
+  const file = e.target.files[0];
+  const previewContainer = document.getElementById("imagePreviews");
+
+  // Create or update preview for this image slot
+  let previewDiv = document.getElementById(`preview-image-${imageNum}`);
+  if (!previewDiv) {
+    previewDiv = document.createElement("div");
+    previewDiv.id = `preview-image-${imageNum}`;
+    previewDiv.className = "relative";
+    previewContainer.appendChild(previewDiv);
+  }
+
+  if (file) {
+    const reader = new FileReader();
+    reader.onload = function (e) {
+      previewDiv.innerHTML = `
+        <img src="${e.target.result}" class="w-20 h-20 object-cover rounded-lg" />
+        <button type="button" onclick="clearImageInput(${imageNum})" 
+          class="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs">
+          <i class="fas fa-times"></i>
+        </button>
+        ${imageNum === 1 ? '<span class="absolute -bottom-2 left-1/2 transform -translate-x-1/2 bg-green-500 text-white text-xs px-1 rounded">رئيسية</span>' : ""}
+      `;
+    };
+    reader.readAsDataURL(file);
+  } else {
+    previewDiv.innerHTML = "";
+  }
+}
+
+// Clear image input and preview
+function clearImageInput(imageNum) {
+  const input = document.getElementById(`productImage${imageNum}`);
+  if (input) {
+    input.value = "";
+  }
+  const previewDiv = document.getElementById(`preview-image-${imageNum}`);
+  if (previewDiv) {
+    previewDiv.innerHTML = "";
+  }
+}
+
+// Remove image from selection
+function removeImage(index) {
+  // This is a visual removal only - actual removal happens on form submit
+  const previewContainer = document.getElementById("imagePreviews");
+  if (previewContainer.children[index]) {
+    previewContainer.children[index].style.opacity = "0.3";
+    previewContainer.children[index].style.pointerEvents = "none";
+  }
+}
+
+// Render existing images for editing
+function renderExistingImages(images) {
+  const previewContainer = document.getElementById("imagePreviews");
+  previewContainer.innerHTML = "";
+
+  if (!images || images.length === 0) {
+    return;
+  }
+
+  images.forEach((img, index) => {
+    const div = document.createElement("div");
+    div.className = "relative";
+    div.innerHTML = `
+      <img src="${img}" class="w-20 h-20 object-cover rounded-lg" />
+      <button type="button" onclick="deleteExistingImage('${img}', ${index})" 
+        class="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs">
+        <i class="fas fa-times"></i>
+      </button>
+      ${index === 0 ? '<span class="absolute -bottom-2 left-1/2 transform -translate-x-1/2 bg-green-500 text-white text-xs px-1 rounded">رئيسية</span>' : ""}
+    `;
+    previewContainer.appendChild(div);
+  });
+}
+
+// Delete existing image
+function deleteExistingImage(imgUrl, index) {
+  if (!confirm("هل تريد حذف هذه الصورة؟")) return;
+
+  // Get current existing images from hidden field
+  let existingImages = JSON.parse(
+    document.getElementById("existingImages").value || "[]",
+  );
+
+  // Remove the image
+  existingImages.splice(index, 1);
+
+  // Update hidden field
+  document.getElementById("existingImages").value =
+    JSON.stringify(existingImages);
+
+  // Re-render
+  renderExistingImages(existingImages);
 }
 
 // Close Modal
@@ -852,6 +982,8 @@ window.showAddWilayaModal = showAddWilayaModal;
 window.saveWilaya = saveWilaya;
 window.deleteWilaya = deleteWilaya;
 window.saveStoreInfo = saveStoreInfo;
+window.clearImageInput = clearImageInput;
+window.previewSingleImage = previewSingleImage;
 
 // ==================== WILAYA MANAGEMENT ====================
 

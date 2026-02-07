@@ -1045,19 +1045,55 @@
             </style>
 
             <div class="form-group">
-              <label class="form-label">الصورة</label>
-              <input
-                type="file"
-                id="productImage"
-                class="form-control"
-                accept="image/*"
-              />
-              <div id="imagePreview" class="mt-2" style="display: none">
-                <img
-                  id="previewImage"
-                  class="w-32 h-32 object-cover rounded-lg"
-                />
+              <label class="form-label">الصور (4 صور)</label>
+              <div class="grid grid-cols-2 gap-4">
+                <div>
+                  <label class="form-label text-sm">الصورة 1 (الرئيسية)</label>
+                  <input
+                    type="file"
+                    id="productImage1"
+                    class="form-control"
+                    accept="image/*"
+                    onchange="previewSingleImage(event, 1)"
+                  />
+                </div>
+                <div>
+                  <label class="form-label text-sm">الصورة 2</label>
+                  <input
+                    type="file"
+                    id="productImage2"
+                    class="form-control"
+                    accept="image/*"
+                    onchange="previewSingleImage(event, 2)"
+                  />
+                </div>
+                <div>
+                  <label class="form-label text-sm">الصورة 3</label>
+                  <input
+                    type="file"
+                    id="productImage3"
+                    class="form-control"
+                    accept="image/*"
+                    onchange="previewSingleImage(event, 3)"
+                  />
+                </div>
+                <div>
+                  <label class="form-label text-sm">الصورة 4</label>
+                  <input
+                    type="file"
+                    id="productImage4"
+                    class="form-control"
+                    accept="image/*"
+                    onchange="previewSingleImage(event, 4)"
+                  />
+                </div>
               </div>
+
+              <!-- Image Previews -->
+              <div id="imagePreviews" class="mt-3 grid grid-cols-4 gap-2"></div>
+
+              <!-- Hidden field for existing images -->
+              <input type="hidden" id="existingImages" name="existingImages" />
             </div>
 
             <div class="form-group">

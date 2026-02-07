@@ -1,7 +1,7 @@
 // windy.luxury - JavaScript pour le site e-commerce en français avec IndexedDB
-// Configuration
+// Configuration - Use environment variable or default to localhost
 const CONFIG = {
-  API_BASE: "https://windy-luxury.onrender.com/api",
+  API_BASE: import.meta.env.VITE_API_URL || "http://localhost:4000/api",
 };
 
 let shoppingCart = [];
@@ -911,6 +911,8 @@ function renderProducts(category, page = 1) {
   paginatedProducts.forEach((product) => {
     const isProductAvailable = product.stock > 0;
     const mainImage = product.image;
+    // Support both single image and multiple images
+    const images = product.images || (product.image ? [product.image] : []);
 
     const productCard = document.createElement("div");
     productCard.className = "product-card";
@@ -934,6 +936,7 @@ function renderProducts(category, page = 1) {
                                 <span class="text-xs">${product.title.substring(0, 15)}...</span>
                             </div>`
                     }
+                    ${images.length > 1 ? '<div class="absolute bottom-2 right-2 bg-black/50 text-white text-xs px-2 py-1 rounded">' + images.length + " photos</div>" : ""}
                 </div>
             </div>
             
@@ -1191,6 +1194,10 @@ function showProductImage(productId) {
 
   currentProduct = product;
   selectedSize = null; // Reset size selection
+  selectedImageIndex = 0; // Reset image index
+
+  // Support both single image and multiple images
+  const images = product.images || (product.image ? [product.image] : []);
 
   // Update modal content
   const modalImage = document.getElementById("productDetailsImage");
@@ -1199,13 +1206,31 @@ function showProductImage(productId) {
   const modalStock = document.getElementById("productDetailsStock");
   const modalCategory = document.getElementById("productDetailsCategory");
   const modalDescription = document.getElementById("productDetailsDescription");
+  const imageGallery = document.getElementById("imageGallery");
 
   if (modalImage) {
-    modalImage.src = product.image || "";
+    modalImage.src = images[0] || "";
     modalImage.onerror = function () {
       this.src =
         "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgdmlld0JveD0iMCAwIDIwMCAyMDAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PHJlY3Qgd2lkdGg9IjIwMCIgaGVpZ2h0PSIyMDAiIGZpbGw9IiNGMEYwRjAiLz48cGF0aCBkPSJNNTAgNzVMMTAwIDEyNUwxNTAgNzUiIHN0cm9rZT0iI0YwNTc2QyIgc3Ryb2tlLXdpZHRoPSIyIi8+PGNpcmNsZSBjeD0iMTAwIiBjeT0iNzUiIHI9IjEwIiBmaWxsPSIjRjA1NzZDIi8+PGNpcmNsZSBjeD0iNTAiIGN5PSIxMjUiIHI9IjEwIiBmaWxsPSIjRjA1NzZDIi8+PGNpcmNsZSBjeD0iMTUwIiBjeT0iMTI1IiByPSIxMCIgZmlsbD0iI0YwNTc2QyIvPjwvc3ZnPg==";
     };
+  }
+
+  // Render image gallery thumbnails
+  if (imageGallery && images.length > 1) {
+    imageGallery.innerHTML = images
+      .map(
+        (img, index) => `
+      <img src="${img}" 
+           class="w-16 h-16 object-cover rounded cursor-pointer border-2 ${index === 0 ? "border-purple-600" : "border-transparent"}" 
+           onclick="changeProductImage(${index})"
+           onerror="this.src='data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjQiIGhlaWdodD0iNjQiIHZpZXdCb3g9IjAgMCA2NCA2NCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iNjQiIGhlaWdodD0iNjQiIGZpbGw9IiNGMEYwRjAiLz48cGF0aCBkPSJNMjAgMjBsMjAgMjBsMjAtMjAiIHN0cm9rZT0iI0YwNTc2QyIgc3Ryb2tlLXdpZHRoPSIyIi8+PGNpcmNsZSBjeD0iMjAiIGN5PSIyMCIgcj0iMTAiIGZpbGw9IiNGMDU3NkMiLz48Y2lyY2xlIGN4PSI0MCIgY3k9IjIwIiByPSIxMCIgZmlsbD0iI0YwNTc2QyIvPjwvc3ZnPg==';">
+    `,
+      )
+      .join("");
+    imageGallery.classList.remove("hidden");
+  } else if (imageGallery) {
+    imageGallery.classList.add("hidden");
   }
 
   if (modalTitle) modalTitle.textContent = product.name || product.title || "-";
@@ -1228,6 +1253,31 @@ function showProductImage(productId) {
     });
     modal.classList.add("active");
     document.body.style.overflow = "hidden";
+  }
+}
+
+// Change product image in modal
+function changeProductImage(index) {
+  const product = currentProduct;
+  if (!product) return;
+
+  const images = product.images || (product.image ? [product.image] : []);
+  if (index >= 0 && index < images.length) {
+    selectedImageIndex = index;
+    const modalImage = document.getElementById("productDetailsImage");
+    if (modalImage) {
+      modalImage.src = images[index];
+    }
+
+    // Update gallery thumbnails
+    const imageGallery = document.getElementById("imageGallery");
+    if (imageGallery) {
+      const thumbs = imageGallery.querySelectorAll("img");
+      thumbs.forEach((thumb, i) => {
+        thumb.classList.toggle("border-purple-600", i === index);
+        thumb.classList.toggle("border-transparent", i !== index);
+      });
+    }
   }
 }
 
@@ -1793,6 +1843,7 @@ window.scrollToCollection = scrollToCollection;
 window.scrollToTop = scrollToTop;
 window.changePage = changePage;
 window.showProductImage = showProductImage;
+window.changeProductImage = changeProductImage;
 window.closeProductDetailsModal = closeProductDetailsModal;
 window.addToCartFromDetails = addToCartFromDetails;
 window.buyNowFromDetails = buyNowFromDetails;
